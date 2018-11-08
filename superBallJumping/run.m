@@ -43,7 +43,7 @@ stringRestLength(ActuatedStrings) = ((100-overtension)/100)*norm(nodes(1,:)-node
 
 % Physical properties
 
-K = 20e3;              % String stiffness (N/m)
+K = 10e3;              % String stiffness (N/m)
 stringStiffness = K*ones(24,1);
 c = 80;             % damping constant
 stringDamping = c*ones(24,1);  %string damping vector
