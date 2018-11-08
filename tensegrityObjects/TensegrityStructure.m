@@ -95,7 +95,7 @@ classdef TensegrityStructure < handle
             %%%%%%%%%%%%% Check for repeat bars or strings %%%%%%%%%%%%%
             B = unique([stringNodes barNodes]', 'rows');
             if size(B,1) ~= (obj.bb+obj.ss)
-                error('SOme bars or strings are repeated between node sets')
+                error('Some bars or strings are repeated between node sets')
             end
             
             %%%%%%%%%%%%% Build Connectivity matrices  %%%%%%%%%%%%%%%%%%
@@ -286,7 +286,7 @@ classdef TensegrityStructure < handle
                 Q((isString & (restLengths>lengths | Q>0))) = 0;
                 
                 memberTensions = -Q .* lengths;
-                T_limit = 200;
+                T_limit = 500;%200;
                 memberTensions(isString & (memberTensions > T_limit)) = T_limit; % Saturate cable tensions
                 obj.stringTensions = memberTensions(logical(isString));
                 Q = -memberTensions ./ lengths;
@@ -361,19 +361,21 @@ classdef TensegrityStructure < handle
             %friction model constants
             Kp = 20000;  Kd = 5000;  muS = 0.64;  muD = 0.54; kk = 1000; kFP = 20000; kFD = 5000;
             
-            %%%%%%%%%%%%% ukf tuning variables %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            z =  obj.measurementUKFInput(:); x = obj.ySimUKF(:);
-            L = (nUKF-1)/2; 
+            %%%%%%%%%%%%% UKF tuning variables %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % UKF means Unscented Kalman filter
+            z =  obj.measurementUKFInput(:);            % observation
+            x = obj.ySimUKF(:);                         % state
+            L = (nUKF-1)/2;     % L is the dimension of the augmented state
             LI = obj.lengthMeasureIndices;
             m = size(z,1);
-            alpha=2/L;
-            beta=2;
-            ki = 0;
+            alpha=2/L;                                  % parameters
+            beta=2;                                     % parameters
+            ki = 0;                                     % parameters
             lambda=alpha^2*(L+ki)-L;
             c=L+lambda;
-            Ws=[lambda/c 0.5/c+zeros(1,2*L)];
+            Ws=[lambda/c 0.5/c+zeros(1,2*L)];           %weights
             fN = sim.fN;
-            Wc=Ws;  Wc(1) = Wc(1)+(1-alpha^2+beta^2);
+            Wc=Ws;  Wc(1) = Wc(1)+(1-alpha^2+beta^2);   %weights
             c=sqrt(c);
             
             %Compute the UKF sigmas
