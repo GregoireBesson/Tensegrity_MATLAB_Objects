@@ -3,11 +3,10 @@ clc
 clear all;
 close all;
 
-if isunix()
 addpath('../tensegrityObjects')
-else
-addpath('..\tensegrityObjects')  
-end
+
+%global restLengthDataStore;
+%global membersLengthDataStore;
 
 %% Define tensegrity structure
 
@@ -18,7 +17,7 @@ bar_radius = 0.010;             % (m)
 string_radius = 0.005;          % (m) minimum 5mm
 nodalMass = 0.42*ones(12,1);    % target: a 5kg robot
 pretension = 15;                % tension on strings at rest, (%)
-maxTension = 60;                % max tension on actuated strings, (%)
+maxTension = 50;                % max tension on actuated strings, (%)
 K = 1000;                       % String stiffness, (N/m)
 c = 80;                         % viscous friction coef, (Ns/m)
 stringStiffness = K*ones(24,1); % String stiffness (N/m)
@@ -112,7 +111,6 @@ ground.EdgeColor = 'none';
 drawnow; % Draw and hold initial conditions
 pause(0);
 
-
 %% Run dynamics
 
 displayTimespan = 1/20;     % 20fps
@@ -120,7 +118,22 @@ displayTimespan = 1/20;     % 20fps
 myDynamicsUpdate(superBall, superBallDynamicsPlot, displayTimespan, ...
     actuatedStrings, pretension, maxTension, l0);
 
+nbLoop = 200;
+membersLengthDataStore = zeros(nbLoop,30);
+stringRestLengthDataStore = zeros(nbLoop,24);
+stringTensionsDataStore = zeros(nbLoop,24);
+
 % Simulation loop
-for i = 1:500
+for i = 1:nbLoop
     myDynamicsUpdate();
+    membersLengthDataStore(i,:) = superBall.memberLength;
+    stringRestLengthDataStore(i,:) = superBall.stringRestLength;
+    stringTensionsDataStore(i,:) = superBall.stringTensions;
 end
+
+figure(2)
+plot(stringTensionsDataStore)
+figure(3)
+plot(membersLengthDataStore)
+figure(4)
+plot(stringRestLengthDataStore)

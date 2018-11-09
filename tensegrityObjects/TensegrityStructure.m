@@ -44,7 +44,10 @@ classdef TensegrityStructure < handle
         P
         lengthMeasureIndices
         baseStationPoints
+        memberTensions
         stringTensions
+        memberLength
+        stringRestLength
         
     end
     
@@ -209,7 +212,7 @@ classdef TensegrityStructure < handle
         
         
         function lengths = getLengths(obj,nodeXYZ)
-            %Get lengths of all members
+            %Returns a 30x1 vector with members lengths
             lengths = sum((nodeXYZ([obj.simStruct.topNs obj.simStruct.topNb],:) - nodeXYZ([obj.simStruct.botNs obj.simStruct.botNb],:)).^2,2).^0.5;
         end
         
@@ -242,6 +245,7 @@ classdef TensegrityStructure < handle
             stiffness = [sim.stringStiffness; sim.barStiffness];
             CC = sim.C';
             restLengths = [sim.stringRestLengths; sim.barRestLengths];
+            obj.stringRestLength = sim.stringRestLengths;
             restLengths(isnan(restLengths) | isinf(restLengths)) = 0;
             damping = [sim.stringDamping; zeros(obj.bb,1)];
             topN = [sim.topNs sim.topNb];
@@ -267,29 +271,30 @@ classdef TensegrityStructure < handle
             function nodeXYZdoubleDot = getAccel(nodeXYZ,nodeXYZdot)
                 memberNodeXYZ = nodeXYZ(topN,:) - nodeXYZ(botN,:); % Member XYZ matrix M
                 memberNodeXYZdot = nodeXYZdot(topN ,:) - nodeXYZdot(botN,:);
-                lengths = sqrt(sum((memberNodeXYZ).^2,2));
+                %lengths = sqrt(sum((memberNodeXYZ).^2,2));
+                obj.memberLength = sqrt(sum((memberNodeXYZ).^2,2));
                 memberVel = sum(memberNodeXYZ.*memberNodeXYZdot,2);
                 
                 %restLengths
-                % Compute force density in each string and bar:
+                % Compute force density in each string and bar: 
                 % F = k(l-l0) model:
-                Q = stiffness.*(restLengths ./ lengths - 1) - damping.*memberVel;
+                Q = stiffness.*(restLengths ./ obj.memberLength - 1) - damping.*memberVel;      %TODO: unit ????
                 % F = c(l-l0)/l0 model:
                 
                 
-                if any(isString & (restLengths>lengths | Q>0))
+                if any(isString & (restLengths>obj.memberLength | Q>0))
                     %fprintf('Strings are going slack!\n');
                     %stringsAreSlack=1;
                 end
                 
                 % Enforce all strings can only carry tension:
-                Q((isString & (restLengths>lengths | Q>0))) = 0;
+                Q((isString & (restLengths>obj.memberLength | Q>0))) = 0;
                 
-                memberTensions = -Q .* lengths;
-                T_limit = 500;%200;
-                memberTensions(isString & (memberTensions > T_limit)) = T_limit; % Saturate cable tensions
-                obj.stringTensions = memberTensions(logical(isString));
-                Q = -memberTensions ./ lengths;
+                obj.memberTensions = -Q .* obj.memberLength;
+                T_limit = 300;
+                obj.memberTensions(isString & (obj.memberTensions > T_limit)) = T_limit; % Saturate cable tensions
+                obj.stringTensions = obj.memberTensions(logical(isString));
+                Q = -obj.memberTensions ./ obj.memberLength;
                 
                 % Forces on each cable
                 GG = (memberNodeXYZ.*Q(:,[1 1 1]));
@@ -439,7 +444,7 @@ classdef TensegrityStructure < handle
             P12=X2*diag(Wc)*Z2'; %Transformed cross covariance matrix
             K=P12/P2;
             x=x1+K*(z-z1);                              %state update
-            obj.P = P1 -K*P12';                                %covariance update
+            obj.P = P1 -K*P12';                         %covariance update
             obj.ySimUKF = reshape(x,[],3);            
             
             function nodeXYZdoubleDot = getAccels(nodeXYZs,nodeXYZdots)
