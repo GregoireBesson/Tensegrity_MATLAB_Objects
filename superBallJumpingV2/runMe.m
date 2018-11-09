@@ -18,7 +18,7 @@ bar_radius = 0.010;             % (m)
 string_radius = 0.005;          % (m) minimum 5mm
 nodalMass = 0.42*ones(12,1);    % target: a 5kg robot
 pretension = 15;                % tension on strings at rest, (%)
-maxTension = 55;                % max tension on actuated strings, (%)
+maxTension = 60;                % max tension on actuated strings, (%)
 K = 1000;                       % String stiffness, (N/m)
 c = 80;                         % viscous friction coef, (Ns/m)
 stringStiffness = K*ones(24,1); % String stiffness (N/m)
@@ -49,7 +49,11 @@ strings = [1  1   1  1  2  2  2  2  3  3  3  3  4  4  4  4  5  5  6  6  7  7  8 
            7  8  10 12  5  6 10 12  7  8  9 11  5  6  9 11 11 12  9 10 11 12  9 10];
        
 % vector containing which strings are going to be pulled
-actuatedStrings = [3 7 5 6 19 20 9 10 21 22 12 16];
+%actuatedStrings = [3 7 5 6 19 20 9 10 21 22 12 16]; %to show an upright mvt
+ actuatedStrings = [9 10 11 15 23 24 17 18 4 8 5 6]; %to start in good pos
+%actuatedStrings = [9 10];                  %1 lower actuation
+%actuatedStrings = [9 10 11 15];            %2 lower actuations
+%actuatedStrings = [9 10 11 15 23 24];      %3 lower actuations
 
 % Compute rest lengths from a certain pretension
 l0 = norm(nodes(1,:)-nodes(7,:));       % initial string length
@@ -69,7 +73,7 @@ nodes(:,3) = nodes(:,3) + CoMz;             % shift all the nodes in z
 
 % Simulation and plot timesteps
 delT = 0.001;                   % timestep for dynamic sim in seconds
-delTUKF  = 0.005;               % timestep for the U Kalman Filter
+delTUKF  = 0.001;               % timestep for the U Kalman Filter
 
 % creation of the object superBall
 superBall = TensegrityStructure(nodes, strings, bars, F, stringStiffness,...
@@ -87,18 +91,26 @@ updatePlot(superBallDynamicsPlot);
 
 %settings to make it pretty
 axis equal
+view(90, 0); % X-Z view
 view(3)
 grid on
 light('Position',[0 0 10],'Style','local')
 lighting flat
 colormap([0.8 0.8 1; 0 1 1]);
 lims = 1.2*barLength;
-xlim([-1.2*lims 1.2*lims])
-ylim([-1.2*lims 1.2*lims])
+%xlim([-1.2*lims 1.2*lims])
+%ylim([-1.2*lims 1.2*lims])
 zlim(1.6*[-0.01 lims])
+% plot the ground
+hold on
+[x, y] = meshgrid(-3*barLength:0.1:3*barLength); % Generate x and y data
+z = -bar_radius*ones(size(x, 1)); % Generate z data
+C = 2*x.*y;
+ground = surf(x, y, z); % Plot the surface
+ground.EdgeColor = 'none';
 
 drawnow; % Draw and hold initial conditions
-pause(4);
+pause(0);
 
 
 %% Run dynamics

@@ -11,14 +11,14 @@ if nargin>1
     dynamicsPlot = dynamicsPlot1;
     tspan = displayTimeInterval;
     actuatedSpringsVec = actuatedSprings;
-    pretensionVector = (pretension:maxTension);
+    pretensionVector = [pretension:maxTension maxTension maxTension maxTension maxTension maxTension maxTension]; %to hold the compressed position
     lZero = l0;
 end
 
 %%% Optional rest-length controller %%%
 i = i + 1;
 if i > 50  % Start compression after a certain time.
-    if (mod(i,2)==0) % increase tension every 2 loops
+    if (mod(i,3)==0) % increase tension every 2 loops
         k = k + 1;
         % after reaching maxtension, release energy by resetting
         if (k > length(pretensionVector)) 
