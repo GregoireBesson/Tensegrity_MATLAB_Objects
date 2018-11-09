@@ -118,22 +118,19 @@ displayTimespan = 1/20;     % 20fps
 myDynamicsUpdate(superBall, superBallDynamicsPlot, displayTimespan, ...
     actuatedStrings, pretension, maxTension, l0);
 
-nbLoop = 200;
-membersLengthDataStore = zeros(nbLoop,30);
-stringRestLengthDataStore = zeros(nbLoop,24);
-stringTensionsDataStore = zeros(nbLoop,24);
+nbLoop = 300;
 
 % Simulation loop
 for i = 1:nbLoop
     myDynamicsUpdate();
-    membersLengthDataStore(i,:) = superBall.memberLength;
-    stringRestLengthDataStore(i,:) = superBall.stringRestLength;
-    stringTensionsDataStore(i,:) = superBall.stringTensions;
+    
+    %real time plot of data
+    plotData(superBall,i,nbLoop,'PostSim');
 end
 
-figure(2)
-plot(stringTensionsDataStore)
-figure(3)
-plot(membersLengthDataStore)
-figure(4)
-plot(stringRestLengthDataStore)
+% figure(2)
+% plot(stringTensionsDataStore)
+% figure(3)
+% plot(membersLengthDataStore)
+% figure(4)
+% plot(stringRestLengthDataStore)
