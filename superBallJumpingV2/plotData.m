@@ -31,15 +31,21 @@ if (strcmpi(plotCmd,'RealTime'))
     figure(f2);
     subplot(3,1,1);
     plot(timeVector(1:i),stringRestLengthDataStore(:,1:i))
-    title('String Rest Length')
+    title('Strings Rest Lengths')
+    xlabel('Time [s]')
+    ylabel('[m]')
     grid on
     subplot(3,1,2);
     plot(timeVector(1:i),membersLengthDataStore(:,1:i))
-    title('Member Length')
+    title('Members Lengths')
+    xlabel('Time [s]')
+    ylabel('[m]')
     grid on
     subplot(3,1,3);
     plot(timeVector(1:i),stringTensionsDataStore(:,1:i))
     title('String Tension')
+    xlabel('Time [s]')
+    ylabel('[Newtons]')
     grid on
     hold on
 % Postsimulation Plot 
@@ -48,15 +54,21 @@ elseif (i==nbLoop)
     figure(f2);
     subplot(3,1,1);
     plot(timeVector,stringRestLengthDataStore)
-    title('String Rest Length')
+    title('Strings Rest Lengths')
+    xlabel('Time [s]')
+    ylabel('[m]')
     grid on
     subplot(3,1,2);
     plot(timeVector,membersLengthDataStore)
-    title('Member Length')
+    title('Members Lengths')
+    xlabel('Time [s]')
+    ylabel('[m]')
     grid on
     subplot(3,1,3);
     plot(timeVector,stringTensionsDataStore)
     title('String Tension')
+    xlabel('Time [s]')
+    ylabel('[Newtons]')
     grid on
     hold on
 end

@@ -11,14 +11,14 @@ addpath('../tensegrityObjects')
 %% Define tensegrity structure
 
 % Physical parameters
-barLength = 1;                  % SUPERball length, (m)
+barLength = 0.3;                  % SUPERball length, (m)
 barSpacing = barLength/2;       % space between bars, usually l/2 (m)
-bar_radius = 0.010;             % (m)
-string_radius = 0.005;          % (m) minimum 5mm
-nodalMass = 0.42*ones(12,1);    % target: a 5kg robot
-pretension = 15;                % tension on strings at rest, (%)
-maxTension = 50;                % max tension on actuated strings, (%)
-K = 1000;                       % String stiffness, (N/m)
+bar_radius = 0.005;             % (m)
+string_radius = 0.001;          % (m) minimum 5mm
+nodalMass = 0.05*ones(12,1);    % target: a 5kg robot
+pretension = 10;                % tension on strings at rest, (%)
+maxTension = 80;                % max tension on actuated strings, (%)
+K = 500;                         % String stiffness, (N/m)
 c = 80;                         % viscous friction coef, (Ns/m)
 stringStiffness = K*ones(24,1); % String stiffness (N/m)
 barStiffness = 100000*ones(6,1);% Bar stiffness (N/m)
@@ -49,8 +49,8 @@ strings = [1  1   1  1  2  2  2  2  3  3  3  3  4  4  4  4  5  5  6  6  7  7  8 
        
 % vector containing which strings are going to be pulled
 %actuatedStrings = [3 7 5 6 19 20 9 10 21 22 12 16]; %to show an upright mvt
- actuatedStrings = [9 10 11 15 23 24 17 18 4 8 5 6]; %to start in good pos
-%actuatedStrings = [9 10];                  %1 lower actuation
+%actuatedStrings = [9 10 11 15 23 24 17 18 4 8 5 6]; %to start in good pos
+ actuatedStrings = [9 10];                  %1 lower actuation
 %actuatedStrings = [9 10 11 15];            %2 lower actuations
 %actuatedStrings = [9 10 11 15 23 24];      %3 lower actuations
 
@@ -65,7 +65,7 @@ nodes = (Mz(1:3,1:3)*nodes')';
 nodes = (My(1:3,1:3)*nodes')';
 
 % set the droping height
-CoMz = 0.5;                                 % (m)
+CoMz = barLength/2;                         % (m)
 nodes(:,3) = nodes(:,3) + CoMz;             % shift all the nodes in z
 
 %% Creation of the structure

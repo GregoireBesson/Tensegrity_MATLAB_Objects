@@ -254,7 +254,7 @@ classdef TensegrityStructure < handle
             yy = y(1:end/2,:);
             
             yDot = y((1:end/2)+end/2,:);
-            for i = 1:round(tspan/dt)                              % calculation loop
+            for i = 1:round(tspan/dt)                   % calculation loop
                 k_1 = getAccel(yy,yDot);
                 yDot1 = yDot+k_1*(1/3*dt);
                 k_2  = getAccel(yy+yDot*(1/3*dt), yDot1);
@@ -262,7 +262,7 @@ classdef TensegrityStructure < handle
                 k_3 = getAccel(yy+(yDot1-1/3*yDot)*dt,yDot2);
                 yDot3 = yDot+(k_1 -k_2 + k_3)*dt;
                 k_4 = getAccel(yy+(yDot-yDot1+yDot2)*dt,yDot3);
-                yy = yy + (dt/8)*(yDot+3*(yDot1+yDot2)+yDot3);  % main equation
+                yy = yy + (dt/8)*(yDot+3*(yDot1+yDot2)+yDot3);% main equation
                 yDot = yDot + (dt/8)*(k_1+3*(k_2+k_3)+k_4);  % main equation
                 lastContact(staticNotApplied,:) = yy(staticNotApplied,1:2);
             end
@@ -273,12 +273,12 @@ classdef TensegrityStructure < handle
                 memberNodeXYZdot = nodeXYZdot(topN ,:) - nodeXYZdot(botN,:);
                 %lengths = sqrt(sum((memberNodeXYZ).^2,2));
                 obj.memberLength = sqrt(sum((memberNodeXYZ).^2,2));
-                memberVel = sum(memberNodeXYZ.*memberNodeXYZdot,2);
+                memberVel = sum(memberNodeXYZ.*memberNodeXYZdot,2); %position times velocity ? what is that ?
                 
                 %restLengths
                 % Compute force density in each string and bar: 
                 % F = k(l-l0) model:
-                Q = stiffness.*(restLengths ./ obj.memberLength - 1) - damping.*memberVel;      %TODO: unit ????
+                Q = stiffness.*(restLengths ./ obj.memberLength - 1) - damping.*memberVel; % TODO I guess Q is in N/m but not sure
                 % F = c(l-l0)/l0 model:
                 
                 
@@ -290,11 +290,11 @@ classdef TensegrityStructure < handle
                 % Enforce all strings can only carry tension:
                 Q((isString & (restLengths>obj.memberLength | Q>0))) = 0;
                 
-                obj.memberTensions = -Q .* obj.memberLength;
+                obj.memberTensions = -Q .* obj.memberLength; % Tensions in N
                 T_limit = 300;
                 obj.memberTensions(isString & (obj.memberTensions > T_limit)) = T_limit; % Saturate cable tensions
                 obj.stringTensions = obj.memberTensions(logical(isString));
-                Q = -obj.memberTensions ./ obj.memberLength;
+                Q = -obj.memberTensions ./ obj.memberLength; % TODO Tensions obtained using Q, then Q is derived from Tensions ? Weird right ?
                 
                 % Forces on each cable
                 GG = (memberNodeXYZ.*Q(:,[1 1 1]));
