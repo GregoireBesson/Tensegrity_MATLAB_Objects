@@ -12,10 +12,10 @@ barLength = 0.3;                % SUPERball length, (m)
 barSpacing = barLength/2;       % space between bars, usually l/2 (m)
 bar_radius = 0.005;             % (m)
 string_radius = 0.001;          % (m) minimum 5mm
-nodalMass = 0.03*ones(12,1);    % target: a 5kg robot
+nodalMass = 0.030*ones(12,1);   % target: a 5kg robot                      % Mockup is 120g (10g per node) but equations cannot be solved, minimum mass is 3x larger so I divided g by 3
 pretension = 12.5;              % tension on strings at rest, (%)
-maxTension = 50;                % max tension on actuated strings, (%)
-K = 300;                        % String stiffness, (N/m)
+maxTension = pretension;                % max tension on actuated strings, (%)
+K = 30;                        % String stiffness, (N/m)
 c = 80;                         % viscous friction coef, (Ns/m)
 stringStiffness = K*ones(24,1); % String stiffness (N/m)
 barStiffness = 100000*ones(6,1);% Bar stiffness (N/m)
@@ -96,9 +96,9 @@ light('Position',[0 0 10],'Style','local')
 lighting flat
 colormap([0.8 0.8 1; 0 1 1]);
 lims = 1.2*barLength;
-%xlim([-1.2*lims 1.2*lims])
-%ylim([-1.2*lims 1.2*lims])
-zlim(1.6*[-0.01 lims])
+xlim([-1.2*lims 1.2*lims])
+ylim([-1.2*lims 1.2*lims])
+zlim(2.5*[-0.01 lims])
 % plot the ground
 hold on
 [x, y] = meshgrid(-3*barLength:0.1:3*barLength); % Generate x and y data
@@ -117,7 +117,7 @@ displayTimespan = 1/20;     % 20fps
 myDynamicsUpdate(superBall, superBallDynamicsPlot, displayTimespan, ...
     actuatedStrings, pretension, maxTension, l0);
 
-nbLoop = 200;
+nbLoop = 100;
 
 % Simulation loop
 for i = 1:nbLoop

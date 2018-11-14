@@ -11,7 +11,10 @@ if nargin>1
     dynamicsPlot = dynamicsPlot1;
     tspan = displayTimeInterval;
     actuatedSpringsVec = actuatedSprings;
-    pretensionVector = [pretension:maxTension maxTension maxTension maxTension maxTension maxTension maxTension]; %to hold the compressed position
+    pretensionVector = [pretension:maxTension maxTension maxTension ...
+             maxTension maxTension maxTension maxTension maxTension ... 
+             maxTension maxTension maxTension maxTension maxTension]; 
+                                    %to hold the compressed position
     lZero = l0;
 end
 
