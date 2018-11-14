@@ -11,7 +11,7 @@ classdef TensegrityPlot < handle
         barRad                %bar radius for plotting
         stringRad             %string radius for plotting
         sphereTForm           %transform object for spheres which sit at nodes in plot
-        memberTForms              %transform object for bar cylinders
+        memberTForms          %transform object for bar cylinders
     end
     methods
         function obj = TensegrityPlot(nodePoints, stringNodes, barNodes, barRad, stringRad)
