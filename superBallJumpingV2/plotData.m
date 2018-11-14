@@ -43,7 +43,7 @@ if (strcmpi(plotCmd,'RealTime'))
     grid on
     subplot(3,1,3);
     plot(timeVector(1:i),stringTensionsDataStore(:,1:i))
-    title('String Tension')
+    title('String Tensions')
     xlabel('Time [s]')
     ylabel('[Newtons]')
     grid on
@@ -66,7 +66,7 @@ elseif (i==nbLoop)
     grid on
     subplot(3,1,3);
     plot(timeVector,stringTensionsDataStore)
-    title('String Tension')
+    title('String Tensions')
     xlabel('Time [s]')
     ylabel('[Newtons]')
     grid on

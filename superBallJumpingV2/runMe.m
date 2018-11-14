@@ -5,20 +5,17 @@ close all;
 
 addpath('../tensegrityObjects')
 
-%global restLengthDataStore;
-%global membersLengthDataStore;
-
 %% Define tensegrity structure
 
 % Physical parameters
-barLength = 0.3;                  % SUPERball length, (m)
+barLength = 0.3;                % SUPERball length, (m)
 barSpacing = barLength/2;       % space between bars, usually l/2 (m)
 bar_radius = 0.005;             % (m)
 string_radius = 0.001;          % (m) minimum 5mm
-nodalMass = 0.05*ones(12,1);    % target: a 5kg robot
-pretension = 10;                % tension on strings at rest, (%)
-maxTension = 80;                % max tension on actuated strings, (%)
-K = 500;                         % String stiffness, (N/m)
+nodalMass = 0.03*ones(12,1);    % target: a 5kg robot
+pretension = 12.5;              % tension on strings at rest, (%)
+maxTension = 50;                % max tension on actuated strings, (%)
+K = 300;                        % String stiffness, (N/m)
 c = 80;                         % viscous friction coef, (Ns/m)
 stringStiffness = K*ones(24,1); % String stiffness (N/m)
 barStiffness = 100000*ones(6,1);% Bar stiffness (N/m)
@@ -49,16 +46,18 @@ strings = [1  1   1  1  2  2  2  2  3  3  3  3  4  4  4  4  5  5  6  6  7  7  8 
        
 % vector containing which strings are going to be pulled
 %actuatedStrings = [3 7 5 6 19 20 9 10 21 22 12 16]; %to show an upright mvt
-%actuatedStrings = [9 10 11 15 23 24 17 18 4 8 5 6]; %to start in good pos
- actuatedStrings = [9 10];                  %1 lower actuation
+ actuatedStrings = [9 10 11 15 23 24 17 18 4 8 5 6]; %to start in good pos
+%actuatedStrings = [9 10];                  %1 lower actuation
 %actuatedStrings = [9 10 11 15];            %2 lower actuations
 %actuatedStrings = [9 10 11 15 23 24];      %3 lower actuations
+%actuatedStrings = [9 10 19 20];            %1 lower and 1 upper actuation
+%actuatedStrings = [17 18];                 %1 actuation to test stiffness
 
 % Compute rest lengths from a certain pretension
 l0 = norm(nodes(1,:)-nodes(7,:));       % initial string length
 stringRestLength = ((100-pretension)/100)*ones(24,1)*l0;
      
-% rotate the structure so that it land on a triangle base  
+% rotate the structure so that it land on a triangle base (nodes 3,8 and 9)
 Mz  = makehgtform('zrotate', -45*pi/180);   %rot Matrix 45deg around z
 My  = makehgtform('yrotate', 55*pi/180);    %rot Matrix 55deg around y
 nodes = (Mz(1:3,1:3)*nodes')';
@@ -118,19 +117,12 @@ displayTimespan = 1/20;     % 20fps
 myDynamicsUpdate(superBall, superBallDynamicsPlot, displayTimespan, ...
     actuatedStrings, pretension, maxTension, l0);
 
-nbLoop = 300;
+nbLoop = 200;
 
 % Simulation loop
 for i = 1:nbLoop
     myDynamicsUpdate();
     
-    %real time plot of data
+    % display Data 'PostSim' or 'RealTime' (make simulation much slower!)
     plotData(superBall,i,nbLoop,'PostSim');
 end
-
-% figure(2)
-% plot(stringTensionsDataStore)
-% figure(3)
-% plot(membersLengthDataStore)
-% figure(4)
-% plot(stringRestLengthDataStore)

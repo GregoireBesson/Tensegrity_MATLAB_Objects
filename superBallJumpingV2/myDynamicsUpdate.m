@@ -1,4 +1,4 @@
-function myDynamicsUpdate(tensStruct1, dynamicsPlot1, displayTimeInterval, actuatedSprings, pretension, maxTension, l0)
+  function myDynamicsUpdate(tensStruct1, dynamicsPlot1, displayTimeInterval, actuatedSprings, pretension, maxTension, l0)
 % This function will perform dynamics update each timestep.
 
 %create some persistent variables for objects and structs

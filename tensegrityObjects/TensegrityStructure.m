@@ -5,36 +5,36 @@ classdef TensegrityStructure < handle
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         nodePoints            % n by 3 matrix of node points
         
-        % Below are two matrices describing string and bar connectivity which
-        % are 2 by ss and 2 by bb where ss is the number of strings and bb is
-        % the number of bars. each column of this matrix corresponds to a string
-        % or bar and the top and bottom entries are the node numbers that the
-        % string or bar spans
-        stringNodes           %2 by ss matrix of node numbers for each string
+        % Below are two matrices describing string and bar connectivity 
+        % which are 2 by ss and 2 by bb where ss is the number of strings 
+        % and bb is the number of bars. each column of this matrix 
+        % corresponds to a string or bar and the top and bottom entries 
+        % are the node numbers that the string or bar spans
+        stringNodes         %2 by ss matrix of node numbers for each string
         %end node, top row must be less than bottom row
         
-        barNodes              %2 by bb matrix node numbers for each bar end
+        barNodes            %2 by bb matrix node numbers for each bar end
         %node, top row must be less than bottom row
-        F                     %n by 3 matrix nodal forces
-        quadProgOptions       %options for quad prog
+        F                   %n by 3 matrix nodal forces
+        quadProgOptions     %options for quad prog
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%Added for dynamics %%%%%%%%%%%%%%%%%%
-        simStruct %a structure containing most variables needed for simulation functions
-        %this improves efficiency because we don't need to pass
-        %the entire object to get simulation variables
+        simStruct %a structure containing most variables needed for 
+        %simulation functions. This improves efficiency because we don't 
+        %need to pass the entire object to get simulation variables
         simStructUKF
-        delT      %Timestep of simulation
-        delTUKF   %Timestep of UKF simulation
+        delT                %Timestep of simulation
+        delTUKF             %Timestep of UKF simulation
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%%%%%%%%%%%%%%%%%%%%%%%% Auto Generated %%%%%%%%%%%%%%%%%%%%%%%%%%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        Cs                    %ss by n string connectivity matrix which is auto-generated
-        Cb                    %bb by n bar connectivity matrix which is auto-generated
-        C                     %(ss+bb) by n connectivity matrix which is auto-generated
-        n                     %scalar number of nodes
-        bb                    %scalar number of bars
-        ss                    %scalar number of strings
+        Cs      %ss by n string connectivity matrix which is auto-generated
+        Cb      %bb by n bar connectivity matrix which is auto-generated
+        C       %(ss+bb) by n connectivity matrix which is auto-generated
+        n       %scalar number of nodes
+        bb      %scalar number of bars
+        ss      %scalar number of strings
         ySim
         
         
@@ -52,7 +52,9 @@ classdef TensegrityStructure < handle
     end
     
     methods
-        function obj = TensegrityStructure(nodePoints, stringNodes, barNodes, F,stringStiffness,barStiffness,stringDamping,nodalMass,delT,delTUKF,stringRestLengths)
+        function obj = TensegrityStructure(nodePoints, stringNodes, ...
+                barNodes, F,stringStiffness,barStiffness,stringDamping,...
+                nodalMass,delT,delTUKF,stringRestLengths)
             if(size(nodePoints,2)~=3 || ~isnumeric(nodePoints))
                 error('node points should be n by 3 matrix of doubles')
             end
@@ -128,10 +130,11 @@ classdef TensegrityStructure < handle
             
             obj.quadProgOptions = optimoptions('quadprog','Algorithm',  'interior-point-convex','Display','off');
             obj.groundHeight = 0;
-            %%%%%%%%%%%%%%%%%%%%Dynamics Variables%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            %these are quick vector lists of bars and strings inserted into simstruct
-            %used for efficiently computing string and bar lengths etc. so
-            %that we don't waste time indexing string and bar nodes
+            %%%%%%%%%%%%%%%%%%%%Dynamics Variables%%%%%%%%%%%%%%%%%%%%%%%%%
+            %these are quick vector lists of bars and strings inserted into 
+            %simstruct used for efficiently computing string and bar 
+            %lengths etc. so that we don't waste time indexing string and 
+            %bar nodes
             if(isempty(obj.barNodes))
                 topNb = [];
                 botNb =[];
@@ -213,10 +216,11 @@ classdef TensegrityStructure < handle
         
         function lengths = getLengths(obj,nodeXYZ)
             %Returns a 30x1 vector with members lengths
-            lengths = sum((nodeXYZ([obj.simStruct.topNs obj.simStruct.topNb],:) - nodeXYZ([obj.simStruct.botNs obj.simStruct.botNb],:)).^2,2).^0.5;
+            lengths = sum((nodeXYZ([obj.simStruct.topNs obj.simStruct.topNb],:) ...
+                - nodeXYZ([obj.simStruct.botNs obj.simStruct.botNb],:)).^2,2).^0.5;
         end
         
-        %%%%%%%%%%%%%%%%%%% Dynamics Functions %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %%%%%%%%%%%%%%%%%%% Dynamics Functions %%%%%%%%%%%%%%%%%%%%%%%%%%%%
         function dynamicsUpdate(obj,tspan,y0)
             persistent lastContact
             if(nargin>2)
@@ -262,18 +266,19 @@ classdef TensegrityStructure < handle
                 k_3 = getAccel(yy+(yDot1-1/3*yDot)*dt,yDot2);
                 yDot3 = yDot+(k_1 -k_2 + k_3)*dt;
                 k_4 = getAccel(yy+(yDot-yDot1+yDot2)*dt,yDot3);
-                yy = yy + (dt/8)*(yDot+3*(yDot1+yDot2)+yDot3);% main equation
-                yDot = yDot + (dt/8)*(k_1+3*(k_2+k_3)+k_4);  % main equation
+                yy = yy + (dt/8)*(yDot+3*(yDot1+yDot2)+yDot3);% main eq
+                yDot = yDot + (dt/8)*(k_1+3*(k_2+k_3)+k_4); % main equation
                 lastContact(staticNotApplied,:) = yy(staticNotApplied,1:2);
             end
             obj.ySim =[yy;yDot];
             
             function nodeXYZdoubleDot = getAccel(nodeXYZ,nodeXYZdot)
-                memberNodeXYZ = nodeXYZ(topN,:) - nodeXYZ(botN,:); % Member XYZ matrix M
+                % Member XYZ matrix M
+                memberNodeXYZ = nodeXYZ(topN,:) - nodeXYZ(botN,:); 
                 memberNodeXYZdot = nodeXYZdot(topN ,:) - nodeXYZdot(botN,:);
                 %lengths = sqrt(sum((memberNodeXYZ).^2,2));
                 obj.memberLength = sqrt(sum((memberNodeXYZ).^2,2));
-                memberVel = sum(memberNodeXYZ.*memberNodeXYZdot,2); %position times velocity ? what is that ?
+                memberVel = sum(memberNodeXYZ.*memberNodeXYZdot,2);         %position times velocity ? what is that ?
                 
                 %restLengths
                 % Compute force density in each string and bar: 
@@ -290,11 +295,13 @@ classdef TensegrityStructure < handle
                 % Enforce all strings can only carry tension:
                 Q((isString & (restLengths>obj.memberLength | Q>0))) = 0;
                 
-                obj.memberTensions = -Q .* obj.memberLength; % Tensions in N
+                obj.memberTensions = -Q .* obj.memberLength; %Tensions in N
                 T_limit = 300;
-                obj.memberTensions(isString & (obj.memberTensions > T_limit)) = T_limit; % Saturate cable tensions
+                % Saturate cable tensions
+                obj.memberTensions(isString & ...
+                    (obj.memberTensions > T_limit)) = T_limit; 
                 obj.stringTensions = obj.memberTensions(logical(isString));
-                Q = -obj.memberTensions ./ obj.memberLength; % TODO Tensions obtained using Q, then Q is derived from Tensions ? Weird right ?
+                Q = -obj.memberTensions ./ obj.memberLength;                % TODO Tensions obtained using Q, then Q is derived from Tensions ? Weird right ?
                 
                 % Forces on each cable
                 GG = (memberNodeXYZ.*Q(:,[1 1 1]));
@@ -366,7 +373,7 @@ classdef TensegrityStructure < handle
             %friction model constants
             Kp = 20000;  Kd = 5000;  muS = 0.64;  muD = 0.54; kk = 1000; kFP = 20000; kFD = 5000;
             
-            %%%%%%%%%%%%% UKF tuning variables %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            %%%%%%%%%%%%% UKF tuning variables %%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % UKF means Unscented Kalman filter
             z =  obj.measurementUKFInput(:);            % observation
             x = obj.ySimUKF(:);                         % state
