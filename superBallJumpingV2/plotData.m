@@ -48,9 +48,12 @@ if (strcmpi(plotCmd,'RealTime'))
     ylabel('[Newtons]')
     grid on
     hold on
+    
 % Postsimulation Plot 
 elseif (i==nbLoop)
     f2 = figure('Name','Data','NumberTitle','off');
+    % Set Size and position
+    set(f2, 'Position', [20 20 1000 600]);
     figure(f2);
     subplot(3,1,1);
     plot(timeVector,stringRestLengthDataStore)
@@ -71,4 +74,5 @@ elseif (i==nbLoop)
     ylabel('[Newtons]')
     grid on
     hold on
+    
 end
