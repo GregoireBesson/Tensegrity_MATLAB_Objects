@@ -8,7 +8,7 @@
 function plotData(obj,i,nbLoop,plotCmd)
 
 persistent f2 timeVector membersLengthDataStore ... 
-    stringRestLengthDataStore stringTensionsDataStore
+    stringRestLengthDataStore stringTensionsDataStore stringToPlot
 
 % initialisation
 if (i==1)
@@ -19,6 +19,7 @@ if (i==1)
     stringRestLengthDataStore = zeros(24,nbLoop);
     membersLengthDataStore = zeros(30,nbLoop);
     stringTensionsDataStore = zeros(24,nbLoop);
+    stringToPlot = 18;
 end
 
 % store Data
@@ -56,19 +57,19 @@ elseif (i==nbLoop)
     set(f2, 'Position', [20 20 1000 600]);
     figure(f2);
     subplot(3,1,1);
-    plot(timeVector,stringRestLengthDataStore)
+    plot(timeVector,stringRestLengthDataStore(stringToPlot,:))
     title('Strings Rest Lengths')
     xlabel('Time [s]')
     ylabel('[m]')
     grid on
     subplot(3,1,2);
-    plot(timeVector,membersLengthDataStore)
+    plot(timeVector,membersLengthDataStore(stringToPlot,:))
     title('Members Lengths')
     xlabel('Time [s]')
     ylabel('[m]')
     grid on
     subplot(3,1,3);
-    plot(timeVector,stringTensionsDataStore)
+    plot(timeVector,stringTensionsDataStore(stringToPlot,:))
     title('String Tensions')
     xlabel('Time [s]')
     ylabel('[Newtons]')
