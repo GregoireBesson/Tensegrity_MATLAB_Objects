@@ -13,7 +13,8 @@ if nargin>1
     actuatedSpringsVec = actuatedSprings;
     pretensionVector = [pretension:maxTension maxTension maxTension ...
              maxTension maxTension maxTension maxTension maxTension ... 
-             maxTension maxTension maxTension maxTension maxTension]; 
+             maxTension maxTension maxTension maxTension maxTension ...
+             pretension pretension pretension pretension pretension]; 
                                     %to hold the compressed position
     lZero = l0;
 end
