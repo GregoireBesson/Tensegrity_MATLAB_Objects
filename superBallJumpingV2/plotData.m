@@ -19,7 +19,7 @@ if (i==1)
     stringRestLengthDataStore = zeros(24,nbLoop);
     membersLengthDataStore = zeros(30,nbLoop);
     stringTensionsDataStore = zeros(24,nbLoop);
-    stringToPlot = 18;
+    stringToPlot = [9 10 11 15 23 24];
 end
 
 % store Data
@@ -57,19 +57,22 @@ elseif (i==nbLoop)
     set(f2, 'Position', [20 20 1000 600]);
     figure(f2);
     subplot(3,1,1);
-    plot(timeVector,stringRestLengthDataStore(stringToPlot,:))
+    %plot(timeVector,stringRestLengthDataStore(stringToPlot,:))
+    plot(timeVector,stringRestLengthDataStore)
     title('Strings Rest Lengths')
     xlabel('Time [s]')
     ylabel('[m]')
     grid on
     subplot(3,1,2);
-    plot(timeVector,membersLengthDataStore(stringToPlot,:))
+    %plot(timeVector,membersLengthDataStore(stringToPlot,:))
+    plot(timeVector,membersLengthDataStore)
     title('Members Lengths')
     xlabel('Time [s]')
     ylabel('[m]')
     grid on
     subplot(3,1,3);
-    plot(timeVector,stringTensionsDataStore(stringToPlot,:))
+    %plot(timeVector,stringTensionsDataStore(stringToPlot,:))
+    plot(timeVector,stringTensionsDataStore)
     title('String Tensions')
     xlabel('Time [s]')
     ylabel('[Newtons]')

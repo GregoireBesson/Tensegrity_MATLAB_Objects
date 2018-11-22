@@ -296,7 +296,7 @@ classdef TensegrityStructure < handle
                 Q((isString & (restLengths>obj.memberLength | Q>0))) = 0;
                 
                 obj.memberTensions = -Q .* obj.memberLength; %Tensions in N
-                T_limit = 200;
+                T_limit = 700;
                 % Saturate cable tensions
                 obj.memberTensions(isString & ...
                     (obj.memberTensions > T_limit)) = T_limit; 
