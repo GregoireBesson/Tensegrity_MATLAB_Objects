@@ -8,14 +8,14 @@ addpath('../tensegrityObjects')
 %% Define tensegrity structure
 
 % Physical parameters
-barLength = 0.3;                % SUPERball length, (m)
+barLength = 0.5;                  % SUPERball length, (m)
 barSpacing = barLength/2;       % space between bars, usually l/2 (m)
-bar_radius = 0.005;             % (m)
-string_radius = 0.001;          % (m) minimum 5mm
-nodalMass = 0.030*ones(12,1);   % target: a 5kg robot                      % Mockup is 120g (10g per node) but equations cannot be solved, minimum mass is 3x larger so I divided g by 3
-pretension = 12.5;              % tension on strings at rest, (%)
-maxTension = pretension;                % max tension on actuated strings, (%)
-K = 30;                        % String stiffness, (N/m)
+bar_radius = 0.01;              % (m)
+string_radius = 0.005;          % (m) minimum 5mm
+nodalMass = 0.2*ones(12,1);     % target: a 5kg robot                      % Mockup is 120g (10g per node) but equations cannot be solved, minimum mass is 3x larger so I divided g by 3
+pretension = 10;                % tension on strings at rest, (%)
+maxTension = 55;        % max tension on actuated strings, (%)
+K = 890;                       % String stiffness, (N/m)
 c = 80;                         % viscous friction coef, (Ns/m)
 stringStiffness = K*ones(24,1); % String stiffness (N/m)
 barStiffness = 100000*ones(6,1);% Bar stiffness (N/m)
@@ -46,12 +46,14 @@ strings = [1  1   1  1  2  2  2  2  3  3  3  3  4  4  4  4  5  5  6  6  7  7  8 
        
 % vector containing which strings are going to be pulled
 %actuatedStrings = [3 7 5 6 19 20 9 10 21 22 12 16]; %to show an upright mvt
- actuatedStrings = [9 10 11 15 23 24 17 18 4 8 5 6]; %to start in good pos
+%actuatedStrings = [9 10 11 15 23 24 17 18 4 8 5 6]; %to start in good pos
 %actuatedStrings = [9 10];                  %1 lower actuation
 %actuatedStrings = [9 10 11 15];            %2 lower actuations
 %actuatedStrings = [9 10 11 15 23 24];      %3 lower actuations
 %actuatedStrings = [9 10 19 20];            %1 lower and 1 upper actuation
 %actuatedStrings = [17 18];                 %1 actuation to test stiffness
+actuatedStrings = [ 9 10;
+                   11 15];                 % serial actuation (row by row)
 
 % Compute rest lengths from a certain pretension
 l0 = norm(nodes(1,:)-nodes(7,:));       % initial string length
@@ -117,7 +119,7 @@ displayTimespan = 1/20;     % 20fps
 myDynamicsUpdate(superBall, superBallDynamicsPlot, displayTimespan, ...
     actuatedStrings, pretension, maxTension, l0);
 
-nbLoop = 100;
+nbLoop = round((8/8)*800);
 
 % Simulation loop
 for i = 1:nbLoop
