@@ -5,9 +5,9 @@
 %         - i   (silulation loop index)
 % Output: - suplot of the data of interest
 
-function plotData(obj,plotObj,i,nbLoop,plotCmd)
+function plotData(obj,plotObj,tspan,i,nbLoop,plotCmd)
 
-persistent X Y Z f2 timeVector membersLengthDataStore nodePoints... 
+persistent X Y Z f2 timeVector membersLengthDataStore ... 
     stringRestLengthDataStore stringTensionsDataStore stringToPlot CoM
 
 % initialisation
@@ -20,7 +20,7 @@ if (i==1)
     if (strcmpi(plotCmd,'RealTime'))
         f2 = figure('Name','Data','NumberTitle','off');
     end
-    timeVector = (obj.delT:obj.delT:nbLoop*obj.delT);
+    timeVector = (tspan:tspan:nbLoop*tspan);
     stringRestLengthDataStore = zeros(24,nbLoop);
     membersLengthDataStore = zeros(30,nbLoop);
     stringTensionsDataStore = zeros(24,nbLoop);
@@ -88,7 +88,7 @@ elseif (i==nbLoop)
     % Trajectories
     subplot(3,2,2);
     plot3(CoM(:,X),CoM(:,Y),CoM(:,Z))
-    title('3D Trajectory')
+    title('3D CoM Trajectory')
     xlabel('X [m]')
     ylabel('Y [m]')
     zlabel('Z [m]')
@@ -101,10 +101,11 @@ elseif (i==nbLoop)
     ylim([-1.2*lims 1.2*lims])
     zlim(1*[-0.01 lims])
     subplot(3,2,4);
-    plot(CoM(:,X),CoM(:,Y))
-    title('XY Trajectory')
+    plot(CoM(:,X),CoM(:,Y),'DisplayName','CoM Trace')
+    title('XY CoM Trajectory')
     xlabel('X [m]')
     ylabel('Y [m]')
+    legend show
     grid on
     hold on
     plot(CoM(1,X),CoM(1,Y),'go','DisplayName','Start')

@@ -127,5 +127,6 @@ for i = 1:nbLoop
     myDynamicsUpdate();
     
     % display Data 'PostSim' or 'RealTime' (make simulation much slower!)
-    plotData(superBall,superBallDynamicsPlot,i,nbLoop,'PostSim');
+    plotData(superBall,superBallDynamicsPlot,displayTimespan,...
+        i,nbLoop,'PostSim');
 end
