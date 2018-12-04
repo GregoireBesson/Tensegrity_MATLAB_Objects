@@ -2,12 +2,19 @@
 % lengths and rest lengths in real time
 %
 % Inputs: - obj (TensegrityStructure)
+%         - plotObj (TensegrityPlot)
+%         - tspan (display timespan to derive the time)
 %         - i   (silulation loop index)
+%         - nbLoop (total nb of simulation loops)
+%         - plotCmd (Plot command: 'RealTime' (super slow) or 'PostSim')
+%
 % Output: - suplot of the data of interest
+%         - TraveledDist (Euclidean Dist of CoM from start to end
+%         - Zmax (maximum jump height achieved)
 
 function plotData(obj,plotObj,tspan,i,nbLoop,plotCmd)
 
-persistent X Y Z f2 timeVector membersLengthDataStore ... 
+persistent X Y Z f2 timeVector membersLengthDataStore Zmax ... 
     stringRestLengthDataStore stringTensionsDataStore stringToPlot CoM
 
 % initialisation
@@ -26,6 +33,7 @@ if (i==1)
     stringTensionsDataStore = zeros(24,nbLoop);
     CoM = zeros(nbLoop,3);
     stringToPlot = [9 10 11 15 23 24];
+    Zmax = 0;
 end
 
 % store Data
@@ -33,6 +41,10 @@ stringRestLengthDataStore(:,i) = obj.stringRestLength;
 membersLengthDataStore(:,i) = obj.memberLength;
 stringTensionsDataStore(:,i) = obj.stringTensions;
 CoM(i,:) = mean(plotObj.nodePoints);
+% check max height
+if (CoM(i,Z) > Zmax)
+   Zmax = CoM(i,Z); 
+end
 
 % Real Time Plot (time consuming)
 if (strcmpi(plotCmd,'RealTime'))
@@ -59,6 +71,9 @@ if (strcmpi(plotCmd,'RealTime'))
     
 % Postsimulation Plot 
 elseif (i==nbLoop)
+    obj.TraveledDist = sqrt((CoM(end,X)-CoM(1,X))^2 + (CoM(end,Y)-CoM(1,Y))^2);
+    obj.Zmax = Zmax;
+    
     f2 = figure('Name','Data','NumberTitle','off');
     % Set Size and position
     set(f2, 'Position', [20 20 1000 600]);

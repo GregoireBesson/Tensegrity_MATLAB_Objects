@@ -48,6 +48,8 @@ classdef TensegrityStructure < handle
         stringTensions
         memberLength
         stringRestLength
+        TraveledDist
+        Zmax
         
     end
     

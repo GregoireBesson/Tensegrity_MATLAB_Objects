@@ -120,7 +120,7 @@ displayTimespan = 1/20;     % 20fps
 myDynamicsUpdate(superBall, superBallDynamicsPlot, displayTimespan, ...
     actuatedStrings, pretension, maxTension, l0);
 
-nbLoop = round((8/8)*800);
+nbLoop = round((8/8)*400);
 
 % Simulation loop
 for i = 1:nbLoop
@@ -130,3 +130,8 @@ for i = 1:nbLoop
     plotData(superBall,superBallDynamicsPlot,displayTimespan,...
         i,nbLoop,'PostSim');
 end
+
+%% Simulation results
+
+TraveledDist = superBall.TraveledDist;
+Zmax = superBall.Zmax;
