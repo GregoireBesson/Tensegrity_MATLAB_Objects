@@ -70,7 +70,7 @@ if (strcmpi(plotCmd,'RealTime'))
     hold on
     
 % Postsimulation Plot 
-elseif (i==nbLoop)
+elseif strcmpi(plotCmd,'PostSim') && (i==nbLoop)
     obj.TraveledDist = sqrt((CoM(end,X)-CoM(1,X))^2 + (CoM(end,Y)-CoM(1,Y))^2);
     obj.Zmax = Zmax;
     
@@ -134,4 +134,8 @@ elseif (i==nbLoop)
     zlabel('Z [m]')
     grid on
     
+    %No plot, just store Dist and Zmax
+    elseif strcmpi(plotCmd,'NoPlot') && (i==nbLoop)
+    obj.TraveledDist = sqrt((CoM(end,X)-CoM(1,X))^2 + (CoM(end,Y)-CoM(1,Y))^2);
+    obj.Zmax = Zmax;
 end
