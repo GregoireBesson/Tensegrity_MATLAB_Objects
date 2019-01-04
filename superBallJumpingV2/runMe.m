@@ -49,7 +49,7 @@ actuatedPairStrings = [1  5  9 13 17 19 21 23 11  3 12  4;
                        2  6 10 14 18 20 22 24 15  7 16  8];
        
 % Evolution parameteres
-nbActuators = 6;                            % should be in [1;12]
+nbActuators = 3;                            % should be in [1;12]
 delayAct = 0;                               % in ms
 %Create the random number stream for reproducibility:
 s = RandStream('mlfg6331_64','Seed','Shuffle'); 
@@ -130,9 +130,10 @@ pause(0);
 displayTimespan = 1/20;     % 20fps
 % set the dynamics parameters
 myDynamicsUpdate(superBall, superBallDynamicsPlot, displayTimespan, ...
-    actuatedStrings, pretension, maxTension, l0);
+    actuatedStrings, pretension, maxTension, l0,actuatedPairStrings, ...
+    nbActuators,s);
 
-nbLoop = round((8/8)*200);
+nbLoop = round((8/8)*400);
 
 % Simulation loop
 for i = 1:nbLoop

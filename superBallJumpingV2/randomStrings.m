@@ -7,10 +7,10 @@
 % Output: - actuatedStrings (1 x nbActuators*2) containing the strings to
 %           tension
 
-function actuatedStrings = randomStrings(actuatedPairStrings,nbActuators,stringNumber)
+function actuatedStrings = randomStrings(actuatedPairStrings,nbActuators,rngParam)
 
 %Draw nbActuators unique values from the integers 1 to 1.
-randomIndexes = datasample(stringNumber,1:12,nbActuators,'Replace',false); 
+randomIndexes = datasample(rngParam,1:12,nbActuators,'Replace',false); 
 
 % vector containing which strings are going to be pulled
 actuatedStrings = zeros(2,nbActuators);
