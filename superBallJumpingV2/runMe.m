@@ -43,8 +43,19 @@ bars = [1:2:11;
 % string connectivity
 strings = [1  1   1  1  2  2  2  2  3  3  3  3  4  4  4  4  5  5  6  6  7  7  8  8;
            7  8  10 12  5  6 10 12  7  8  9 11  5  6  9 11 11 12  9 10 11 12  9 10];
+
+% each column contain the pair of colum numbers in strings to actuate
+actuatedPairStrings = [1  5  9 13 17 19 21 23 11  3 12  4;
+                       2  6 10 14 18 20 22 24 15  7 16  8];
        
-% vector containing which strings are going to be pulled
+% Evolution parameteres
+nbActuators = 6;                            % should be in [1;12]
+delayAct = 0;                               % in ms
+%Create the random number stream for reproducibility:
+s = RandStream('mlfg6331_64','Seed','Shuffle'); 
+
+actuatedStrings = randomStrings(actuatedPairStrings,nbActuators,s);
+
 %actuatedStrings = [3 7 5 6 19 20 9 10 21 22 12 16]; %to show an upright mvt
 %actuatedStrings = [9 10 11 15 23 24 17 18 4 8 5 6]; %to start in good pos
 %actuatedStrings = [9 10];                  %1 lower actuation
@@ -52,9 +63,10 @@ strings = [1  1   1  1  2  2  2  2  3  3  3  3  4  4  4  4  5  5  6  6  7  7  8 
 %actuatedStrings = [9 10 11 15 23 24];      %3 lower actuations
 %actuatedStrings = [9 10 19 20];            %1 lower and 1 upper actuation
 %actuatedStrings = [17 18];                 %1 actuation to test stiffness
-actuatedStrings = [ 9 10;
-                   23 24;
-                    3  7];                 % serial actuation (row by row)
+%actuatedStrings = [ 9 10;
+%                   23 24;
+%                    3  7];                 % serial actuation (row by row)
+
 
 % Compute rest lengths from a certain pretension
 l0 = norm(nodes(1,:)-nodes(7,:));       % initial string length
@@ -120,7 +132,7 @@ displayTimespan = 1/20;     % 20fps
 myDynamicsUpdate(superBall, superBallDynamicsPlot, displayTimespan, ...
     actuatedStrings, pretension, maxTension, l0);
 
-nbLoop = round((8/8)*400);
+nbLoop = round((8/8)*200);
 
 % Simulation loop
 for i = 1:nbLoop
