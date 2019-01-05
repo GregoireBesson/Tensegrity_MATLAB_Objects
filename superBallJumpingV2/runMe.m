@@ -68,16 +68,17 @@ nodes(:,3) = nodes(:,3) + CoMz;             % shift all the nodes in z
 
 %% Start a simulation for each individual
 nbIndividuals = 2;
+nbActuations = 3;
 TraveledDist = zeros(nbIndividuals,1);
 Zmax = zeros(nbIndividuals,1);
-actuatedStrings = zeros(nbIndividuals, 2*nbActuators);
+actuatedStrings = zeros(nbIndividuals, nbActuations, 2*nbActuators);
 
 for i = 1:nbIndividuals
-
+ActuationCounter = 0;
 %Create the random number stream for reproducibility:
 rngParameters = RandStream('mlfg6331_64','Seed','Shuffle'); 
 
-actuatedStrings(i,:) = randomStrings(actuators,nbActuators,rngParameters);
+[actuatedStrings,ActuationCounter] = randomStrings(actuators,nbActuators,rngParameters,actuatedStrings,i,ActuationCounter);
 
 %actuatedStrings = [3 7 5 6 19 20 9 10 21 22 12 16]; %to show an upright mvt
 %actuatedStrings = [9 10 11 15 23 24 17 18 4 8 5 6]; %to start in good pos
@@ -137,19 +138,19 @@ pause(0);
 
 displayTimespan = 1/20;     % 20fps
 % set the dynamics parameters
-myDynamicsUpdate(superBall, superBallDynamicsPlot, displayTimespan, ...
-    actuatedStrings(i,:), pretension, maxTension, l0,actuators, nbActuators,...
-    rngParameters);
+[~,~] = myDynamicsUpdate(superBall, superBallDynamicsPlot,...
+    displayTimespan, actuatedStrings, pretension, maxTension, l0,...
+    actuators, nbActuators,rngParameters,i,ActuationCounter,nbActuations);
 
-nbLoop = round((95/100)*600); %2000 -> 100sec de simulation
+nbLoop = round((100/100)*400); %2000 -> 100sec de simulation
 
 % Simulation loop
 for l = 1:nbLoop
-    myDynamicsUpdate();
+    [actuatedStrings,ActuationCounter] = myDynamicsUpdate();
     
     %display Data 'PostSim' or 'RealTime' (make simulation much slower!)
     plotData(superBall,superBallDynamicsPlot,displayTimespan,...
-        l,nbLoop,'NoPlot');
+        l,nbLoop,'PostSim');
 end
 
 %% Simulation results

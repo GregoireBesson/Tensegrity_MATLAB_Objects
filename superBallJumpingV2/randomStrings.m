@@ -1,24 +1,35 @@
 % Function that returns random strings to actuate
 %
-% Inputs: - actuatedPairStrings (2 x 12) pair of strings indexes
+% Inputs: - actuators (2 x 12) pair of strings indexes
 %         - nbActuators to actuate
-%         - stringNumber for the repeatability
+%         - rngParam for the repeatability
+%         - actStringsIn (nbIndiv x nbActuation x 2*nbActuators),table 
+%           containing the actuated strings so far
+%         - indiv, individual counter
+%         - actCounterIn, actuation counter
 %
-% Output: - actuatedStrings (1 x nbActuators*2) containing the strings to
-%           tension
+% Output: - actStringsOut (nbIndiv x nbActuation x 2*nbActuators), table
+%           containing the updated strings to tension
+%         - actCounterOut updated actuation counter
 
-function actuatedStrings = randomStrings(actuatedPairStrings,nbActuators,rngParam)
+function [actStringsOut,actCounterOut] = randomStrings(actuators,nbActuators,rngParam,actStringsIn,indiv,actCounterIn)
 
-%Draw nbActuators unique values from the integers 1 to 1.
+% Draw nbActuators unique values from the integers 1 to 1.
 randomIndexes = datasample(rngParam,1:12,nbActuators,'Replace',false); 
 
 % vector containing which strings are going to be pulled
-actuatedStrings = zeros(2,nbActuators);
-
-for i = 1:length(randomIndexes)
-    actuatedStrings(:,i) = actuatedPairStrings(:,randomIndexes(i));
-end
-
+actuatedStrings = actuators(:,randomIndexes);
+% reshape the 2 x nbAct matrix to a 1 x 2*nbAct Vector
 actuatedStrings = reshape(actuatedStrings,[1,2*nbActuators]);
+
+% increment the actuation counter
+actCounterOut = actCounterIn + 1;
+
+% add the new strings in the array
+actStringsIn(indiv,actCounterOut,:) = actuatedStrings;
+
+% update the output
+actStringsOut = actStringsIn;
+
 
 end
