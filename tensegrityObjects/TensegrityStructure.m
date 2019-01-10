@@ -50,7 +50,6 @@ classdef TensegrityStructure < handle
         stringRestLength
         TraveledDist
         Zmax
-        CurrentActuators
         
     end
     
@@ -299,7 +298,7 @@ classdef TensegrityStructure < handle
                 Q((isString & (restLengths>obj.memberLength | Q>0))) = 0;
                 
                 obj.memberTensions = -Q .* obj.memberLength; %Tensions in N
-                T_limit = 700;
+                T_limit = 100;
                 % Saturate cable tensions
                 obj.memberTensions(isString & ...
                     (obj.memberTensions > T_limit)) = T_limit; 
@@ -350,6 +349,7 @@ classdef TensegrityStructure < handle
             end
         end
         
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% this function is not called !
         function ukfUpdate(obj,tspan,y0)
             persistent lastContact
             sim = obj.simStructUKF;

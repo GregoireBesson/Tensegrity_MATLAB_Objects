@@ -13,9 +13,9 @@ barSpacing = barLength/2;       % space between bars, usually l/2 (m)
 bar_radius = 0.01;              % (m)
 string_radius = 0.005;          % (m) minimum 5mm
 nodalMass = 0.2*ones(12,1);     % target: a 5kg robot                      % Mockup is 120g (10g per node) but equations cannot be solved, minimum mass is 3x larger so I divided g by 3
-pretension = 10;                % tension on strings at rest, (%)
-maxTension = 45;                % max tension on actuated strings, (%)
-K = 890;                        % String stiffness, (N/m)
+pretension = 15;                % tension on strings at rest, (%)
+maxTension = 60;                % max tension on actuated strings, (%)
+K = 364;                        % String stiffness, (N/m)
 c = 80;                         % viscous friction coef, (Ns/m)
 stringStiffness = K*ones(24,1); % String stiffness (N/m)
 barStiffness = 100000*ones(6,1);% Bar stiffness (N/m)
@@ -49,7 +49,7 @@ actuators = [1  5  9 13 17 19 21 23 11  3 12  4;
              2  6 10 14 18 20 22 24 15  7 16  8];
        
 % Evolution parameteres
-nbActuators = 3;                            % should be in [1;12]
+nbActuators = 6;                            % should be in [1;12]
 delayAct = 0;                               % in ms
 
 % Compute rest lengths from a certain pretension
@@ -67,18 +67,23 @@ CoMz = barLength/2;                         % (m)
 nodes(:,3) = nodes(:,3) + CoMz;             % shift all the nodes in z
 
 %% Start a simulation for each individual
-nbIndividuals = 2;
-nbActuations = 3;
+nbIndividuals = 3;
+nbActuations = 1;
 TraveledDist = zeros(nbIndividuals,1);
 Zmax = zeros(nbIndividuals,1);
 actuatedStrings = zeros(nbIndividuals, nbActuations, 2*nbActuators);
 
 for i = 1:nbIndividuals
 ActuationCounter = 0;
+
 %Create the random number stream for reproducibility:
 rngParameters = RandStream('mlfg6331_64','Seed','Shuffle'); 
 
+% randomm actuators for evolution
 [actuatedStrings,ActuationCounter] = randomStrings(actuators,nbActuators,rngParameters,actuatedStrings,i,ActuationCounter);
+
+% manual actuators for testing
+%actuatedStrings = [1 2 13 14 23 24 17 18 3 7 12 16];
 
 %actuatedStrings = [3 7 5 6 19 20 9 10 21 22 12 16]; %to show an upright mvt
 %actuatedStrings = [9 10 11 15 23 24 17 18 4 8 5 6]; %to start in good pos
@@ -142,7 +147,7 @@ displayTimespan = 1/20;     % 20fps
     displayTimespan, actuatedStrings, pretension, maxTension, l0,...
     actuators, nbActuators,rngParameters,i,ActuationCounter,nbActuations);
 
-nbLoop = round((100/100)*400); %2000 -> 100sec de simulation
+nbLoop = round((100/100)*200); %2000 -> 100sec de simulation
 
 % Simulation loop
 for l = 1:nbLoop
