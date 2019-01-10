@@ -50,18 +50,20 @@ classdef TensegrityStructure < handle
         stringRestLength
         TraveledDist
         Zmax
+        selectionMode
         
     end
     
     methods
         function obj = TensegrityStructure(nodePoints, stringNodes, ...
                 barNodes, F,stringStiffness,barStiffness,stringDamping,...
-                nodalMass,delT,delTUKF,stringRestLengths)
+                nodalMass,delT,delTUKF,stringRestLengths,selMode)
             if(size(nodePoints,2)~=3 || ~isnumeric(nodePoints))
                 error('node points should be n by 3 matrix of doubles')
             end
             obj.nodePoints = nodePoints;
             obj.n = size(nodePoints,1);
+            obj.selectionMode = selMode;
             
             %%%%%%%%%%%%%%% Check stringNodes for errors %%%%%%%%%%%%%%%%%
             if((isnumeric(stringNodes) && ~any(mod(stringNodes(:),1)))...

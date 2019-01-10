@@ -75,6 +75,8 @@ actuatedStrings = zeros(nbIndividuals, nbActuations, 2*nbActuators);
 
 for i = 1:nbIndividuals
 ActuationCounter = 0;
+% selectionMode can be 'manual' or 'random'
+selectionMode = 'random';
 
 %Create the random number stream for reproducibility:
 rngParameters = RandStream('mlfg6331_64','Seed','Shuffle'); 
@@ -83,18 +85,20 @@ rngParameters = RandStream('mlfg6331_64','Seed','Shuffle');
 [actuatedStrings,ActuationCounter] = randomStrings(actuators,nbActuators,rngParameters,actuatedStrings,i,ActuationCounter);
 
 % manual actuators for testing
-%actuatedStrings = [1 2 13 14 23 24 17 18 3 7 12 16];
-
-%actuatedStrings = [3 7 5 6 19 20 9 10 21 22 12 16]; %to show an upright mvt
-%actuatedStrings = [9 10 11 15 23 24 17 18 4 8 5 6]; %to start in good pos
-%actuatedStrings = [9 10];                  %1 lower actuation
-%actuatedStrings = [9 10 11 15];            %2 lower actuations
-%actuatedStrings = [9 10 11 15 23 24];      %3 lower actuations
-%actuatedStrings = [9 10 19 20];            %1 lower and 1 upper actuation
-%actuatedStrings = [17 18];                 %1 actuation to test stiffness
-%actuatedStrings = [ 9 10;
-%                   23 24;
-%                    3  7];                 % serial actuation (row by row)
+if (strcmpi(selectionMode,'manual'))
+    actuatedStrings(i,1,:) = [13 14 9 10 3 7 19 20 23 24 1 2]; 
+    
+    %actuatedStrings = [3 7 5 6 19 20 9 10 21 22 12 16]; %to show an upright mvt
+    %actuatedStrings = [9 10 11 15 23 24 17 18 4 8 5 6]; %to start in good pos
+    %actuatedStrings = [9 10];                  %1 lower actuation
+    %actuatedStrings = [9 10 11 15];            %2 lower actuations
+    %actuatedStrings = [9 10 11 15 23 24];      %3 lower actuations
+    %actuatedStrings = [9 10 19 20];            %1 lower and 1 upper actuation
+    %actuatedStrings = [17 18];                 %1 actuation to test stiffness
+    %actuatedStrings = [ 9 10;
+    %                   23 24;
+    %                    3  7];                 % serial actuation (row by row)
+end
 
 %% Creation of the structure
 
@@ -104,7 +108,8 @@ delTUKF  = 0.001;               % timestep for the U Kalman Filter
 
 % creation of the object superBall
 superBall = TensegrityStructure(nodes, strings, bars, F, stringStiffness,...
-    barStiffness, stringDamping, nodalMass, delT, delTUKF, stringRestLength);
+    barStiffness, stringDamping, nodalMass, delT, delTUKF, ...
+    stringRestLength, selectionMode);
 
 %% Create dynamics display
 

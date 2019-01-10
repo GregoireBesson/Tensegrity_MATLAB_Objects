@@ -42,9 +42,11 @@ if i > 50  % Start compression after a certain time.
         if (k > length(pretensionVector)) 
             % reshuffle random actuators
             if (actCounter <= nbActMax)
-                [actuatedSpringsTableIn,actCounter] = randomStrings(actuatorss,nbAct,rngPar,actuatedSpringsTableIn,individual,actCounter);
-                actuatedSpringsTableOut = actuatedSpringsTableIn;
-                actCounterOut = actCounter;
+                if (strcmpi(tensStruct.selectionMode,'Random'))
+                    [actuatedSpringsTableIn,actCounter] = randomStrings(actuatorss,nbAct,rngPar,actuatedSpringsTableIn,individual,actCounter);
+                    actuatedSpringsTableOut = actuatedSpringsTableIn;
+                    actCounterOut = actCounter;
+                end
                 % or go on the next couple of strings to be actuated
                 if (m > 1)
                     j = j + 1;
