@@ -67,8 +67,8 @@ CoMz = barLength/2;                         % (m)
 nodes(:,3) = nodes(:,3) + CoMz;             % shift all the nodes in z
 
 %% Start a simulation for each individual
-nbIndividuals = 3;
-nbActuations = 1;
+nbIndividuals = 1;
+nbActuations = 2;
 TraveledDist = zeros(nbIndividuals,1);
 Zmax = zeros(nbIndividuals,1);
 actuatedStrings = zeros(nbIndividuals, nbActuations, 2*nbActuators);
@@ -76,7 +76,7 @@ actuatedStrings = zeros(nbIndividuals, nbActuations, 2*nbActuators);
 for i = 1:nbIndividuals
 ActuationCounter = 0;
 % selectionMode can be 'manual' or 'random'
-selectionMode = 'random';
+selectionMode = 'manual';
 
 %Create the random number stream for reproducibility:
 rngParameters = RandStream('mlfg6331_64','Seed','Shuffle'); 
@@ -87,6 +87,7 @@ rngParameters = RandStream('mlfg6331_64','Seed','Shuffle');
 % manual actuators for testing
 if (strcmpi(selectionMode,'manual'))
     actuatedStrings(i,1,:) = [13 14 9 10 3 7 19 20 23 24 1 2]; 
+    actuatedStrings(i,2,:) = [3 7 5 6 19 20 9 10 21 22 12 16];
     
     %actuatedStrings = [3 7 5 6 19 20 9 10 21 22 12 16]; %to show an upright mvt
     %actuatedStrings = [9 10 11 15 23 24 17 18 4 8 5 6]; %to start in good pos
@@ -152,7 +153,7 @@ displayTimespan = 1/20;     % 20fps
     displayTimespan, actuatedStrings, pretension, maxTension, l0,...
     actuators, nbActuators,rngParameters,i,ActuationCounter,nbActuations);
 
-nbLoop = round((100/100)*200); %2000 -> 100sec de simulation
+nbLoop = round((100/100)*180*nbActuations); %2000 -> 100sec de simulation
 
 % Simulation loop
 for l = 1:nbLoop

@@ -20,7 +20,7 @@ if nargin>1
     individual = indiv;
     actCounter = actCounterIn; 
     nbActMax = nbActuations;
-    [m, ~] = size(actuatedSpringsTableIn);
+    [~, m, ~] = size(actuatedSpringsTableIn);
     pretensionVector = [pretension:maxTension maxTension maxTension ...
              maxTension maxTension maxTension maxTension maxTension ... 
              maxTension maxTension maxTension maxTension maxTension ...
@@ -60,7 +60,11 @@ if i > 50  % Start compression after a certain time.
         end
         if (actCounter <= nbActMax)
             % update only the actuated strings
-            tensStruct.simStruct.stringRestLengths(actuatedSpringsTableOut(individual,actCounter,:)) = ((100-pretensionVector(k))/100)*lZero;
+            if (strcmpi(tensStruct.selectionMode,'Random'))
+                tensStruct.simStruct.stringRestLengths(actuatedSpringsTableOut(individual,actCounter,:)) = ((100-pretensionVector(k))/100)*lZero;
+            else
+                tensStruct.simStruct.stringRestLengths(actuatedSpringsTableOut(individual,j,:)) = ((100-pretensionVector(k))/100)*lZero;
+            end
         end
     end 
 end
