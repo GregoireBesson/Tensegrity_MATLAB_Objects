@@ -1,12 +1,13 @@
-  function [actuatedSpringsTableOut,actCounterOut] = myDynamicsUpdate(tensStruct1, dynamicsPlot1, displayTimeInterval, actuatedSpringsIn, pretension, maxTension, l0, actuators,nbActuators,rngParam,indiv,actCounterIn,nbActuations)
+  function [actuatedSpringsTableOut,actCounterOut] = myDynamicsUpdate(tensStruct1, dynamicsPlot1, displayTimeInterval, actuatedSpringsIn, pretension, maxTension, l0, actuators,nbActuators,rngParam,indiv,actCounterIn,nbActuations,displaySimulation)
 % This function will perform dynamics update each timestep.
 
 %create some persistent variables for objects and structs
 persistent tensStruct dynamicsPlot tspan i actuatedSpringsTableIn individual... 
            pretensionVector k lZero j m actuatorss nbAct rngPar actCounter...
-           nbActMax
+           nbActMax displaySim
 
 if nargin>1
+    displaySim = displaySimulation;
     i = 0;          % counts the number of times this function is called
     j = 1;          % select wich couple of strings is actuated currently
     k = 1;          % incremented each time the pretension increases
@@ -74,6 +75,7 @@ end
 % Update nodes:
 dynamicsUpdate(tensStruct, tspan);
 dynamicsPlot.nodePoints = tensStruct.ySim(1:end/2,:);
+if displaySim
 updatePlot(dynamicsPlot);
 
 drawnow  %plot it up

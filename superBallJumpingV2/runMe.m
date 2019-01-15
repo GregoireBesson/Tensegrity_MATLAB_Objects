@@ -64,14 +64,15 @@ nodes(:,3) = nodes(:,3) + CoMz;             % shift all the nodes in z
 
 %% Evolution parameters
 
+displaySimulation = 0;          % boolean to display every simulation
 selectionMode = 'random';       % selectionMode can be 'manual' or 'random'
 nbActuators = 6;                % should be in [1;12]
 delayAct = 0;                   % in ms
-nbIndividuals = 3;              % size of population
-nbGeneration = 2;               % number of generation
+nbIndividuals = 5;              % size of population
+nbGeneration = 5;               % number of generation
 nbActuations = 2;               % size of actuation sequence
 k = 2;                          % selection parameter (remove k worst ind.)
-fitness = 'jump';               % perf to be evaluated (jump, dist or both)              
+fitness = 'distMax';               % perf to be evaluated (jump, dist or both)              
 
 traveledDist = zeros(nbIndividuals,1);
 distMax = zeros(nbIndividuals,1);
@@ -123,34 +124,39 @@ for g = 1:nbGeneration
         
         superBallDynamicsPlot = TensegrityPlot(nodes, strings, bars, ...
             bar_radius, string_radius);
-        f = figure('units','normalized','outerposition',[0 0 1 1]);
-        % use a method within TensegrityPlot class to generate a plot of the
-        % structure
-        generatePlot(superBallDynamicsPlot,gca);
-        updatePlot(superBallDynamicsPlot);
         
-        %settings to make it pretty
-        axis equal
-        view(90, 0); % X-Z view
-        view(3)
-        grid on
-        light('Position',[0 0 10],'Style','local')
-        lighting flat
-        colormap([0.8 0.8 1; 0 1 1]);
-        lims = 2*barLength;
-        xlim([-1.2*lims 1.2*lims])
-        ylim([-1.2*lims 1.2*lims])
-        zlim(1*[-0.01 lims])
-        % plot the ground
-        hold on
-        [x, y] = meshgrid(-3*barLength:0.1:3*barLength); % Generate x and y data
-        z = -bar_radius*ones(size(x, 1)); % Generate z data
-        C = 2*x.*y;
-        ground = surf(x, y, z); % Plot the surface
-        ground.EdgeColor = 'none';
+        if (displaySimulation)
         
-        drawnow; % Draw and hold initial conditions
-        pause(0);
+            f = figure('units','normalized','outerposition',[0 0 1 1]);
+            % use a method within TensegrityPlot class to generate a plot of the
+            % structure
+            generatePlot(superBallDynamicsPlot,gca);
+            updatePlot(superBallDynamicsPlot);
+            
+            %settings to make it pretty
+            axis equal
+            view(90, 0); % X-Z view
+            view(3)
+            grid on
+            light('Position',[0 0 10],'Style','local')
+            lighting flat
+            colormap([0.8 0.8 1; 0 1 1]);
+            lims = 2*barLength;
+            xlim([-1.2*lims 1.2*lims])
+            ylim([-1.2*lims 1.2*lims])
+            zlim(1*[-0.01 lims])
+            % plot the ground
+            hold on
+            [x, y] = meshgrid(-3*barLength:0.1:3*barLength); % Generate x and y data
+            z = -bar_radius*ones(size(x, 1)); % Generate z data
+            C = 2*x.*y;
+            ground = surf(x, y, z); % Plot the surface
+            ground.EdgeColor = 'none';
+            
+            drawnow; % Draw and hold initial conditions
+            %pause(0);
+        
+        end
         
         %% Run dynamics
         
@@ -158,7 +164,8 @@ for g = 1:nbGeneration
         % set the dynamics parameters
         [~,~] = myDynamicsUpdate(superBall, superBallDynamicsPlot,...
             displayTimespan, actuatedStrings, pretension, maxTension, l0,...
-            actuators, nbActuators,rngParameters,i,actuationCounter,nbActuations);
+            actuators, nbActuators,rngParameters,i,actuationCounter,...
+            nbActuations, displaySimulation);
         
         nbLoop = round((100/100)*180*nbActuations); %2000 -> 100sec de simulation
         
