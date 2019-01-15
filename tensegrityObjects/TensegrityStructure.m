@@ -50,6 +50,7 @@ classdef TensegrityStructure < handle
         stringRestLength
         TraveledDist
         Zmax
+        DistMax
         selectionMode
         
     end

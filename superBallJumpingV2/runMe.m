@@ -65,15 +65,16 @@ nodes(:,3) = nodes(:,3) + CoMz;             % shift all the nodes in z
 %% Evolution parameters
 
 selectionMode = 'random';       % selectionMode can be 'manual' or 'random'
-nbActuators = 3;                % should be in [1;12]
+nbActuators = 6;                % should be in [1;12]
 delayAct = 0;                   % in ms
 nbIndividuals = 3;              % size of population
-nbGeneration = 3;               % number of generation
+nbGeneration = 2;               % number of generation
 nbActuations = 2;               % size of actuation sequence
 k = 2;                          % selection parameter (remove k worst ind.)
-fitness = 'dist';               % perf to be evaluated (jump, dist or both)              
+fitness = 'jump';               % perf to be evaluated (jump, dist or both)              
 
 traveledDist = zeros(nbIndividuals,1);
+distMax = zeros(nbIndividuals,1);
 zmax = zeros(nbIndividuals,1);
 actuatedStrings = zeros(nbIndividuals, nbActuations, 2*nbActuators);
 performance = zeros(nbIndividuals, nbGeneration);
@@ -173,6 +174,7 @@ for g = 1:nbGeneration
         %% Simulation results
         
         traveledDist(i) = superBall.TraveledDist;
+        distMax(i) = superBall.DistMax;
         zmax(i) = superBall.Zmax;
         
     end
@@ -183,6 +185,8 @@ for g = 1:nbGeneration
         performance(:,g) = zmax;
     elseif (strcmpi(fitness,'dist'))
         performance(:,g) = traveledDist;
+    elseif (strcmpi(fitness,'distMax'))
+        performance(:,g) = distMax;
     else
         performance(:,g) = traveledDist.*zmax;
     end

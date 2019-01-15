@@ -11,10 +11,11 @@
 % Output: - suplot of the data of interest
 %         - TraveledDist (Euclidean Dist of CoM from start to end
 %         - Zmax (maximum jump height achieved)
+%         - DistMax (maximum distance from start reached along the sim)
 
 function plotData(obj,plotObj,tspan,i,nbLoop,plotCmd)
 
-persistent X Y Z f2 timeVector membersLengthDataStore Zmax ... 
+persistent X Y Z f2 timeVector membersLengthDataStore Zmax DistMax... 
     stringRestLengthDataStore stringTensionsDataStore stringToPlot CoM
 
 % initialisation
@@ -34,6 +35,7 @@ if (i==1)
     CoM = zeros(nbLoop,3);
     stringToPlot = [9 10 11 15 23 24];
     Zmax = 0;
+    DistMax = 0;
 end
 
 % store Data
@@ -44,6 +46,11 @@ CoM(i,:) = mean(plotObj.nodePoints);
 % check max height
 if (CoM(i,Z) > Zmax)
    Zmax = CoM(i,Z); 
+end
+% no sqrt to save computation time
+currentDist = (CoM(i,X)-CoM(1,X))^2 + (CoM(i,Y)-CoM(1,Y))^2;
+if ( currentDist > DistMax )
+   DistMax =  currentDist;
 end
 
 % Real Time Plot (time consuming)
@@ -73,6 +80,7 @@ if (strcmpi(plotCmd,'RealTime'))
 elseif strcmpi(plotCmd,'PostSim') && (i==nbLoop)
     obj.TraveledDist = sqrt((CoM(end,X)-CoM(1,X))^2 + (CoM(end,Y)-CoM(1,Y))^2);
     obj.Zmax = Zmax;
+    obj.DistMax = DistMax;
     
     f2 = figure('Name','Data','NumberTitle','off');
     % Set Size and position
@@ -138,4 +146,5 @@ elseif strcmpi(plotCmd,'PostSim') && (i==nbLoop)
     elseif strcmpi(plotCmd,'NoPlot') && (i==nbLoop)
     obj.TraveledDist = sqrt((CoM(end,X)-CoM(1,X))^2 + (CoM(end,Y)-CoM(1,Y))^2);
     obj.Zmax = Zmax;
+    obj.DistMax = DistMax;
 end

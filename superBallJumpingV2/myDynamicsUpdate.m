@@ -74,7 +74,7 @@ end
 % Update nodes:
 dynamicsUpdate(tensStruct, tspan);
 dynamicsPlot.nodePoints = tensStruct.ySim(1:end/2,:);
-%updatePlot(dynamicsPlot);
+updatePlot(dynamicsPlot);
 
 drawnow  %plot it up
 end
