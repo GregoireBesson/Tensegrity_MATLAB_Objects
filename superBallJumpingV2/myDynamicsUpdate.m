@@ -50,9 +50,9 @@ if i > 50  % Start compression after a certain time.
                 % or go on the next couple of strings to be actuated
                 if (m > 1)
                     j = j + 1;
-                    % restart with first couple of strings when finished
                     if (j > m)
-                        j = 1; 
+                        j = 1; % restart with first couple of strings when finished
+                        actCounter = nbActMax + 1; %to stop the actuation
                     end
                 end
                 k = 1;
@@ -74,7 +74,7 @@ end
 % Update nodes:
 dynamicsUpdate(tensStruct, tspan);
 dynamicsPlot.nodePoints = tensStruct.ySim(1:end/2,:);
-updatePlot(dynamicsPlot);
+%updatePlot(dynamicsPlot);
 
 drawnow  %plot it up
 end

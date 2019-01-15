@@ -65,7 +65,7 @@ nodes(:,3) = nodes(:,3) + CoMz;             % shift all the nodes in z
 %% Evolution parameters
 
 selectionMode = 'random';       % selectionMode can be 'manual' or 'random'
-nbActuators = 1;                % should be in [1;12]
+nbActuators = 3;                % should be in [1;12]
 delayAct = 0;                   % in ms
 nbIndividuals = 3;              % size of population
 nbGeneration = 3;               % number of generation
@@ -192,8 +192,8 @@ for g = 1:nbGeneration
     
     %% Mutation
     % send the previous sequences to the next
-    pastActuatedStrings = actuatedStrings;
-    nextActuatedStrings = actuatedStrings;
+    pastActuatedStrings = actuatedStrings(:,1:nbActuations,:);
+    nextActuatedStrings = actuatedStrings(:,1:nbActuations,:);
     % replace the k worst indiv with mutated version of the k best
     % OR with random strings
     for i = 1:k
