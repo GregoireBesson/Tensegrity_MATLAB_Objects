@@ -15,7 +15,7 @@ string_radius = 0.005;          % (m) minimum 5mm
 nodalMass = 0.2*ones(12,1);     % target: a 5kg robot                      % Mockup is 120g (10g per node) but equations cannot be solved, minimum mass is 3x larger so I divided g by 3
 pretension = 15;                % tension on strings at rest, (%)
 maxTension = 60;                % max tension on actuated strings, (%)
-K = 364;                        % String stiffness, (N/m)
+K = 500;                        % String stiffness, (N/m)
 c = 80;                         % viscous friction coef, (Ns/m)
 stringStiffness = K*ones(24,1); % String stiffness (N/m)
 barStiffness = 100000*ones(6,1);% Bar stiffness (N/m)
@@ -65,28 +65,29 @@ nodes(:,3) = nodes(:,3) + CoMz;             % shift all the nodes in z
 %% Evolution parameters
 
 selectionMode = 'random';       % selectionMode can be 'manual' or 'random'
-nbActuators = 6;                % should be in [1;12]
+nbActuators = 1;                % should be in [1;12]
 delayAct = 0;                   % in ms
 nbIndividuals = 3;              % size of population
-nbGeneration = 2;               % number of generation
-nbActuations = 1;               % size of actuation sequence
+nbGeneration = 3;               % number of generation
+nbActuations = 2;               % size of actuation sequence
 k = 2;                          % selection parameter (remove k worst ind.)
-Fitness = 'dist';               % perf to be evaluated (jump, dist or both)              
+fitness = 'dist';               % perf to be evaluated (jump, dist or both)              
 
-TraveledDist = zeros(nbIndividuals,1);
-Zmax = zeros(nbIndividuals,1);
+traveledDist = zeros(nbIndividuals,1);
+zmax = zeros(nbIndividuals,1);
 actuatedStrings = zeros(nbIndividuals, nbActuations, 2*nbActuators);
+performance = zeros(nbIndividuals, nbGeneration);
 
 %Create the random number stream for reproducibility:
 rngParameters = RandStream('mlfg6331_64','Seed','Shuffle');
 
 for g = 1:nbGeneration
     for i = 1:nbIndividuals
-        ActuationCounter = 0;
+        actuationCounter = 0;
         
         % randomm actuators for evolution
-        if ( g==1 || strcmpi(selectionMode,'random'))
-            [actuatedStrings,ActuationCounter] = randomStrings(actuators,nbActuators,rngParameters,actuatedStrings,i,ActuationCounter);
+        if ( g == 1 || strcmpi(selectionMode,'random'))
+            [actuatedStrings,actuationCounter] = randomStrings(actuators,nbActuators,rngParameters,actuatedStrings,i,actuationCounter);
         end
         
         % manual actuators for testing
@@ -156,43 +157,43 @@ for g = 1:nbGeneration
         % set the dynamics parameters
         [~,~] = myDynamicsUpdate(superBall, superBallDynamicsPlot,...
             displayTimespan, actuatedStrings, pretension, maxTension, l0,...
-            actuators, nbActuators,rngParameters,i,ActuationCounter,nbActuations);
+            actuators, nbActuators,rngParameters,i,actuationCounter,nbActuations);
         
         nbLoop = round((100/100)*180*nbActuations); %2000 -> 100sec de simulation
         
         % Simulation loop
         for l = 1:nbLoop
-            [actuatedStrings,ActuationCounter] = myDynamicsUpdate();
+            [actuatedStrings,actuationCounter] = myDynamicsUpdate();
             
-            %display Data 'PostSim' or 'RealTime' (make simulation much slower!)
+            %display Data 'NoPlot', 'PostSim' or 'RealTime' (make simulation much slower!)
             plotData(superBall,superBallDynamicsPlot,displayTimespan,...
-                l,nbLoop,'PostSim');
+                l,nbLoop,'NoPlot');
         end
         
         %% Simulation results
         
-        TraveledDist(i) = superBall.TraveledDist;
-        Zmax(i) = superBall.Zmax;
+        traveledDist(i) = superBall.TraveledDist;
+        zmax(i) = superBall.Zmax;
         
     end
     
     %% Select which performance to be evaluated
     
-    if (strcmpi(Fitness,'jump'))
-        Performance = Zmax;
-    elseif (strcmpi(Fitness,'dist'))
-        Performance = TraveledDist;
+    if (strcmpi(fitness,'jump'))
+        performance(:,g) = zmax;
+    elseif (strcmpi(fitness,'dist'))
+        performance(:,g) = traveledDist;
     else
-        Performance = TraveledDist.*Zmax;
+        performance(:,g) = traveledDist.*zmax;
     end
     
     % sort the perfomances
-    [sortedPerformance, Indexes] = sort(Performance,'ascend');
+    [sortedPerformance, Indexes] = sort(performance(:,g),'ascend');
     
     %% Mutation
     % send the previous sequences to the next
-    pastActuatedStrings = actuatedStrings(:,nbActuations,:);
-    nextActuatedStrings = actuatedStrings(:,nbActuations,:);
+    pastActuatedStrings = actuatedStrings;
+    nextActuatedStrings = actuatedStrings;
     % replace the k worst indiv with mutated version of the k best
     % OR with random strings
     for i = 1:k
@@ -210,3 +211,5 @@ for g = 1:nbGeneration
     selectionMode = 'manual';
 
 end
+
+plotEvolution(performance,fitness,nbActuators,nbGeneration,nbIndividuals,nbActuations,k);
