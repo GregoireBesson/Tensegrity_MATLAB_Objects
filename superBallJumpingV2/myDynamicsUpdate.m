@@ -1,8 +1,8 @@
-  function myDynamicsUpdate(tensStruct1, dynamicsPlot1, displayTimeInterval, pretension, maxTension, l0, actuators, nbActuators, indiv,nbActuationCycle,displaySimulation, genesIn,g,firstStringsToActuate)
+  function myDynamicsUpdate(tensStruct1, dynamicsPlot1, displayTimeInterval, pretension, maxTension, l0, actuators, indiv,nbActuationCycle,displaySimulation, genesIn,g,firstStringsToActuate)
 % This function will perform dynamics update each timestep.
 
 %create some persistent variables for objects and structs
-persistent tensStruct dynamicsPlot tspan i individual nbAct... 
+persistent tensStruct dynamicsPlot tspan i individual ... 
            pretensionVector k lZero actuatorss stringsToActuate...
            nbActMax displaySim genes actCycleCounter genNumber
 
@@ -15,7 +15,6 @@ if nargin>1
     dynamicsPlot = dynamicsPlot1;
     tspan = displayTimeInterval;
     actuatorss = actuators;
-    nbAct = nbActuators;
     individual = indiv;
     genes = genesIn;
     nbActMax = nbActuationCycle;
@@ -50,7 +49,7 @@ if i > 50
                     i = -10000;
                 end
                 % update the strings to actuate
-                stringsToActuate = genes2strings(genes,genNumber,individual,actCycleCounter,actuatorss,nbAct);
+                stringsToActuate = genes2strings(genes,genNumber,individual,actCycleCounter,actuatorss);
             end
             % update tension of the strings to actuate
             tensStruct.simStruct.stringRestLengths(stringsToActuate) = ((100-pretensionVector(k))/100)*lZero;      

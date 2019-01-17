@@ -65,13 +65,13 @@ nodes(:,3) = nodes(:,3) + CoMz;             % shift all the nodes in z
 
 %% Evolution parameters
 
-displaySimulation = 1;          % boolean to display every simulation
+displaySimulation = 0;          % boolean to display every simulation
 selectionMode = 'random';       % selectionMode can be 'manual' or 'random'
-nbActuators = 2;                % should be in [1;12]                       %TODO: do we want to fix this or make it random ?
+nbActuators = 6;                % should be in [1;12]                       %TODO: do we want to fix this or make it random ?
 delayAct = 0;                   % in ms
-nbIndividuals = 2;             % size of population
-nbGeneration = 1;              % number of generation
-nbActuationCycle = 2;           % size of actuation sequence
+nbIndividuals = 10;              % size of population
+nbGeneration = 20;               % number of generation
+nbActuationCycle = 5;           % size of actuation sequence
 k = 5;                          % selection parameter (remove k worst ind.)
 p = 0.2;                        % probability of mutation
 fitness = 'dist';               % perf to be evaluated (jump, dist or both)              
@@ -118,7 +118,7 @@ for g = 1:nbGeneration
         end
         
         % compute the first set of strings of the Cycle of actuation
-        firstStringsToActuate = genes2strings(genes,g,i,1,actuators,nbActuators);
+        firstStringsToActuate = genes2strings(genes,g,i,1,actuators);
         
         %% Creation of the structure
         
@@ -175,7 +175,7 @@ for g = 1:nbGeneration
         % set the dynamics parameters
         myDynamicsUpdate(superBall, superBallDynamicsPlot,...
             displayTimespan, pretension, maxTension, l0,...
-            actuators, nbActuators,i, nbActuationCycle, displaySimulation,genes,g, firstStringsToActuate);
+            actuators,i, nbActuationCycle, displaySimulation,genes,g, firstStringsToActuate);
         
         nbLoop = round((100/100)*180*nbActuationCycle); %2000 -> 100sec de simulation
         
@@ -210,23 +210,13 @@ for g = 1:nbGeneration
     end
     
     % sort the perfomances
-    [sortedPerformance, Indexes] = sort(performance(:,g),'ascend');
+    [sortedPerformance, indexes] = sort(performance(:,g),'ascend');
     
     %% Selection & Mutation
-    % send the previous sequences to the next
-%     pastActuatedStrings = actuatedStrings(:,1:nbActuationCycle,:);
-%     nextActuatedStrings = actuatedStrings(:,1:nbActuationCycle,:);
-%     % replace the k worst indiv with mutated version of the k best
-%     % OR with random strings
-%     for i = 1:k
-%         for a = 0:(nbActuationCycle-1)
-%             [nextActuatedStrings,~] = randomStrings(actuators,nbActuators,...
-%                 rngParameters,nextActuatedStrings,Indexes(i),a);
-%         end
-%     end
-%     
-%     %update the strings to actuate for next generation
-%     actuatedStrings = nextActuatedStrings;
+    
+    % replace the k worst indiv with mutated version of the k best
+    % the k best remained unchanged in the next generation
+    genes = genesMutation(genes,g,indexes,nbActuationCycle,k,p);
     
     % force the next selection mode to manual cause we have now defined
     % sequence
