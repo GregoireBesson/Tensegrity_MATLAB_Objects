@@ -75,16 +75,18 @@ nodes(:,3) = nodes(:,3) + CoMz;             % shift all the nodes in z
 
 %% Evolution parameters
 
-displaySimulation = 0;          % boolean to display every simulation
-selectionMode = 'random';       % selectionMode can be 'manual' or 'random'
+%plot sim Data 'NoPlot', 'PostSim' or 'RealTime' (make sim much slower!)
+displayData = 'NoPlot'; 
+displaySimulation = 1;          % boolean to display every simulation
+initMode = 'manual';       % selectionMode can be 'manual' or 'random'
 nbActuators = 1+round(rand*(nbMotorsMax-1));  % should be in [1;12]        
 delayAct = 0;                   % in ms
-nbIndividuals = 5;             % size of population
-nbGeneration = 5;              % number of generation
-nbActuationCycle = 3;           % size of actuation sequence
-k = 2;                          % selection parameter (remove k worst ind.)
+nbIndividuals = 1;             % size of population
+nbGeneration = 1;              % number of generation
+nbActuationCycle = 2;           % size of actuation sequence
+k = 1;                          % selection parameter (remove k worst ind.)
 p = 0.2;                        % probability of mutation
-fitness = 'dist';               % perf to be evaluated (jump, dist or both)              
+fitness = 'dist';               % perf to be evaluated (jump, dist or jumpDist)              
 
 traveledDist = zeros(nbIndividuals,1);
 distMax = zeros(nbIndividuals,1);
@@ -103,28 +105,36 @@ for g = 1:nbGeneration
         % reset the actuation counter for each individual
         actuationCycleCounter = 1;
         
-        % Init random actuators at the first generation
-        if ( g == 1 || strcmpi(selectionMode,'random'))
-            %[actuatedStrings, genes, actuationCycleCounter] = randomStrings(actuators,nbActuators,rngParameters,actuatedStrings,genes,i,g,actuationCycleCounter);
-            genes(1,i,:,:) = initRandomGenome(nbActuationCycle,...
+        % Init actuators at the first generation
+        if ( g == 1 )
+            % random initialization
+            if (strcmpi(initMode,'random'))
+                %[actuatedStrings, genes, actuationCycleCounter] = randomStrings(actuators,nbActuators,rngParameters,actuatedStrings,genes,i,g,actuationCycleCounter);
+                genes(1,i,:,:) = initRandomGenome(nbActuationCycle,...
                              nbActuators,rngParameters);
-        end
-        
-        % manual actuators for testing
-        if (strcmpi(selectionMode,'manual'))
-            %actuatedStrings(i,1,:) = [13 14 9 10 3 7 19 20 23 24 1 2];
-            %actuatedStrings(i,2,:) = [3 7 5 6 19 20 9 10 21 22 12 16];
-            
-            %actuatedStrings = [3 7 5 6 19 20 9 10 21 22 12 16]; %to show an upright mvt
-            %actuatedStrings = [9 10 11 15 23 24 17 18 4 8 5 6]; %to start in good pos
-            %actuatedStrings = [9 10];                  %1 lower actuation
-            %actuatedStrings = [9 10 11 15];            %2 lower actuations
-            %actuatedStrings = [9 10 11 15 23 24];      %3 lower actuations
-            %actuatedStrings = [9 10 19 20];            %1 lower and 1 upper actuation
-            %actuatedStrings = [17 18];                 %1 actuation to test stiffness
-            %actuatedStrings = [ 9 10;
-            %                   23 24;
-            %                    3  7];                 % serial actuation (row by row)
+            % manual initialization for testing
+            elseif (strcmpi(initMode,'manual'))
+                %     motors:     1  2  3  4  5  6  7  8  9 10 11 12
+                genes(1,1,1,:) = [1  1  1  1  1  0  1  0  1  1  0  1];
+                genes(1,1,2,:) = [0  1  0  1  1  0  0  1  0  1  1  1];
+                %genes(1,1,3,:) = [1 0 0 0 0 0 0 0 0 0 0 0];
+                
+                %actuatedStrings(i,1,:) = [13 14 9 10 3 7 19 20 23 24 1 2];
+                %actuatedStrings(i,2,:) = [3 7 5 6 19 20 9 10 21 22 12 16];
+                %actuatedStrings = [3 7 5 6 19 20 9 10 21 22 12 16]; %to show an upright mvt
+                %actuatedStrings = [9 10 11 15 23 24 17 18 4 8 5 6]; %to start in good pos
+                %actuatedStrings = [9 10];                  %1 lower actuation
+                %actuatedStrings = [9 10 11 15];            %2 lower actuations
+                %actuatedStrings = [9 10 11 15 23 24];      %3 lower actuations
+                %actuatedStrings = [9 10 19 20];            %1 lower and 1 upper actuation
+                %actuatedStrings = [17 18];                 %1 actuation to test stiffness
+                %actuatedStrings = [ 9 10;
+                %                   23 24;
+                %                    3  7];                 % serial actuation (row by row)
+                
+            else
+                error('Initialization mode unknown, enter random or manual');
+            end
         end
         
         % compute the first set of strings of the Cycle of actuation
@@ -139,7 +149,7 @@ for g = 1:nbGeneration
         % creation of the object superBall
         superBall = TensegrityStructure(nodes, strings, bars, F, stringStiffness,...
             barStiffness, stringDamping, nodalMass, delT, delTUKF, ...
-            stringRestLength, selectionMode);
+            stringRestLength, initMode);
         
         %% Create dynamics display
         
@@ -193,9 +203,8 @@ for g = 1:nbGeneration
         for l = 1:nbLoop
             myDynamicsUpdate();
             
-            %display Data 'NoPlot', 'PostSim' or 'RealTime' (make simulation much slower!)
             plotData(superBall,superBallDynamicsPlot,displayTimespan,...
-                l,nbLoop,'NoPlot');
+                l,nbLoop,displayData);
         end
         
         %% Simulation results
@@ -215,8 +224,10 @@ for g = 1:nbGeneration
         performance(:,g) = traveledDist;
     elseif (strcmpi(fitness,'distMax'))
         performance(:,g) = distMax;
-    else
+    elseif (strcmpi(fitness,'distJump'))
         performance(:,g) = traveledDist.*zmax;
+    else 
+        error('Unknown fitness performance');
     end
     
     % sort the perfomances
@@ -226,11 +237,9 @@ for g = 1:nbGeneration
     
     % replace the k worst indiv with mutated version of the k best
     % the k best remained unchanged in the next generation
-    genes = genesMutation(genes,g,indexes,nbActuationCycle,k,p);
-    
-    % force the next selection mode to manual cause we have now defined
-    % sequence
-    selectionMode = 'manual';
+    if (g < nbGeneration)
+        genes = genesMutation(genes,g,indexes,nbActuationCycle,k,p);
+    end
 
 end
 
