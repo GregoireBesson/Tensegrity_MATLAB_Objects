@@ -1,3 +1,10 @@
+% Author:     ???
+% ModifiedBy: Gregoire Besson, EPFL student, gregoire.besson@alumni.epfl.ch
+% Date:       Winter 2018-2019
+%
+% Define the tensegrity structure in a first place, set up evolution
+% parameters, define and run simulation for each individual
+
 %% Simple dynamics example with 6-bar tensegrity.
 clc
 clear all;

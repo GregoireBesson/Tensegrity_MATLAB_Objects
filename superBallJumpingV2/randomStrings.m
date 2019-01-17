@@ -1,3 +1,6 @@
+% Author:   Gregoire Besson, EPFL student, gregoire.besson@alumni.epfl.ch
+% Date:     Winter 2018-2019
+%
 % Function that returns random strings to actuate
 %
 % Inputs: - actuators, (2 x 12) pair of strings indexes

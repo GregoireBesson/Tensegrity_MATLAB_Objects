@@ -1,4 +1,7 @@
-% Function that subplot structure data such as String tensions, forces,
+% Author:   Gregoire Besson, EPFL student, gregoire.besson@alumni.epfl.ch
+% Date:     Winter 2018-2019
+%
+% Subplot structure data such as String tensions, forces,
 % lengths and rest lengths in real time
 %
 % Inputs: - obj (TensegrityStructure)

@@ -1,4 +1,7 @@
-% Function that intitialize the genome with random actuators
+% Author:   Gregoire Besson, EPFL student, gregoire.besson@alumni.epfl.ch
+% Date:     Winter 2018-2019
+%
+% Intitializes the genome with random actuators
 %
 % Inputs: - nbActuationCycle
 %         - nbActuators, to actuate

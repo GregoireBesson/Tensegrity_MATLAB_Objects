@@ -1,5 +1,10 @@
-  function myDynamicsUpdate(tensStruct1, dynamicsPlot1, displayTimeInterval, pretension, maxTension, l0, actuators, indiv,nbActuationCycle,displaySimulation, genesIn,g,firstStringsToActuate)
+% Author:     ???
+% ModifiedBy: Gregoire Besson, EPFL student, gregoire.besson@alumni.epfl.ch
+% Date:       Winter 2018-2019
+%
 % This function will perform dynamics update each timestep.
+
+function myDynamicsUpdate(tensStruct1, dynamicsPlot1, displayTimeInterval, pretension, maxTension, l0, actuators, indiv,nbActuationCycle,displaySimulation, genesIn,g,firstStringsToActuate)
 
 %create some persistent variables for objects and structs
 persistent tensStruct dynamicsPlot tspan i individual ... 
