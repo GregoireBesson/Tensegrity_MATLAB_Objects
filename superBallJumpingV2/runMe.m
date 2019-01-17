@@ -56,6 +56,9 @@ strings = [1  1   1  1  2  2  2  2  3  3  3  3  4  4  4  4  5  5  6  6  7  7  8 
 actuators = [1  5  9 13 17 19 21 23 11  3 12  4;
              2  6 10 14 18 20 22 24 15  7 16  8];
 
+% one motor on each end cap so 12 possible motors on a 6-bars structure       
+[~,nbMotorsMax] = size(actuators);
+
 % Compute rest lengths from a certain pretension
 l0 = norm(nodes(1,:)-nodes(7,:));       % initial string length
 stringRestLength = ((100-pretension)/100)*ones(24,1)*l0;
@@ -74,12 +77,12 @@ nodes(:,3) = nodes(:,3) + CoMz;             % shift all the nodes in z
 
 displaySimulation = 0;          % boolean to display every simulation
 selectionMode = 'random';       % selectionMode can be 'manual' or 'random'
-nbActuators = 6;                % should be in [1;12]                       %TODO: do we want to fix this or make it random ?
+nbActuators = 1+round(rand*(nbMotorsMax-1));  % should be in [1;12]        
 delayAct = 0;                   % in ms
-nbIndividuals = 10;              % size of population
-nbGeneration = 20;               % number of generation
-nbActuationCycle = 5;           % size of actuation sequence
-k = 5;                          % selection parameter (remove k worst ind.)
+nbIndividuals = 5;             % size of population
+nbGeneration = 5;              % number of generation
+nbActuationCycle = 3;           % size of actuation sequence
+k = 2;                          % selection parameter (remove k worst ind.)
 p = 0.2;                        % probability of mutation
 fitness = 'dist';               % perf to be evaluated (jump, dist or both)              
 

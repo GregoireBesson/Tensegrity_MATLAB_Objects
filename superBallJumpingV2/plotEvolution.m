@@ -21,7 +21,7 @@ function plotEvolution(performance,Fitness,nbActuators,nbGeneration,nbIndividual
     plot(generationsVector, avgPerformance)
     hold on
     boxplot(performance);
-    title(['Evolution parameters: ', num2str(nbActuators),' actuators, ', num2str(nbActuations), ' actuations, ', num2str(nbIndividuals), ' individuals, Selection parameter = ',num2str(k)]);
+    title([num2str(nbActuations), ' actuation cycles , ', num2str(nbIndividuals), ' individuals, k = ',num2str(k), num2str(nbActuators),' init actuators, ']);
     xlabel('Generation');
     ylabel(['Performance: ', Fitness, ' (m)']);
     grid on
