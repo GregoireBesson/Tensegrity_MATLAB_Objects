@@ -114,9 +114,13 @@ for g = 1:nbGeneration
                              nbActuators,rngParameters);
             % manual initialization for testing
             elseif (strcmpi(initMode,'manual'))
+                % load the best individual from previous run
+                load('results','BestIndividual');
+                genes(1,1,:,:) = BestIndividual;
+                
                 %     motors:     1  2  3  4  5  6  7  8  9 10 11 12
-                genes(1,1,1,:) = [1  1  1  1  1  0  1  0  1  1  0  1];
-                genes(1,1,2,:) = [0  1  0  1  1  0  0  1  0  1  1  1];
+                %genes(1,1,1,:) = [1  1  1  1  1  0  1  0  1  1  0  1];
+                %genes(1,1,2,:) = [0  1  0  1  1  0  0  1  0  1  1  1];
                 %genes(1,1,3,:) = [1 0 0 0 0 0 0 0 0 0 0 0];
                 
                 %actuatedStrings(i,1,:) = [13 14 9 10 3 7 19 20 23 24 1 2];
@@ -242,5 +246,10 @@ for g = 1:nbGeneration
     end
 
 end
+
+%% Save and plot 
+
+BestIndividual = genes(nbGeneration,indexes(end),:,:);
+save('results.mat','BestIndividual','genes','fitness','performance')
 
 plotEvolution(performance,fitness,nbActuators,nbGeneration,nbIndividuals,nbActuationCycle,k);
