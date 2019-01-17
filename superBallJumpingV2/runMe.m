@@ -22,7 +22,7 @@ string_radius = 0.005;          % (m) minimum 5mm
 nodalMass = 0.2*ones(12,1);     % target: a 5kg robot                      % Mockup is 120g (10g per node) but equations cannot be solved, minimum mass is 3x larger so I divided g by 3
 pretension = 15;                % tension on strings at rest, (%)
 maxTension = 60;                % max tension on actuated strings, (%)
-K = 500;                        % String stiffness, (N/m)
+K = 360;                        % String stiffness, (N/m)
 c = 80;                         % viscous friction coef, (Ns/m)
 stringStiffness = K*ones(24,1); % String stiffness (N/m)
 barStiffness = 100000*ones(6,1);% Bar stiffness (N/m)
@@ -77,16 +77,16 @@ nodes(:,3) = nodes(:,3) + CoMz;             % shift all the nodes in z
 
 %plot sim Data 'NoPlot', 'PostSim' or 'RealTime' (make sim much slower!)
 displayData = 'NoPlot'; 
-displaySimulation = 1;          % boolean to display every simulation
-initMode = 'manual';       % selectionMode can be 'manual' or 'random'
+displaySimulation = 0;          % boolean to display every simulation
+initMode = 'random';       % selectionMode can be 'manual' or 'random'
 nbActuators = 1+round(rand*(nbMotorsMax-1));  % should be in [1;12]        
 delayAct = 0;                   % in ms
-nbIndividuals = 1;             % size of population
-nbGeneration = 1;              % number of generation
+nbIndividuals = 10;             % size of population
+nbGeneration = 30;              % number of generation
 nbActuationCycle = 2;           % size of actuation sequence
-k = 1;                          % selection parameter (remove k worst ind.)
+k = 5;                          % selection parameter (remove k worst ind.)
 p = 0.2;                        % probability of mutation
-fitness = 'dist';               % perf to be evaluated (jump, dist or jumpDist)              
+fitness = 'jump';               % perf to be evaluated (jump, dist or jumpDist)              
 
 traveledDist = zeros(nbIndividuals,1);
 distMax = zeros(nbIndividuals,1);
@@ -201,7 +201,7 @@ for g = 1:nbGeneration
             displayTimespan, pretension, maxTension, l0,...
             actuators,i, nbActuationCycle, displaySimulation,genes,g, firstStringsToActuate);
         
-        nbLoop = round((100/100)*180*nbActuationCycle); %2000 -> 100sec de simulation
+        nbLoop = round(240*nbActuationCycle); %2000 -> 100sec de simulation
         
         % Simulation loop
         for l = 1:nbLoop

@@ -39,8 +39,8 @@ end
 i = i + 1;
 % Start compression after a certain time.
 if i > 50  
-    % increase tension every 20 loops --> jump in 50sec
-    if (mod(i,2)==0)   
+    % increase tension every 3 loops --> jump in 50sec
+    if (mod(i,3)==0)   
             k = k + 1;  
             % after reaching maxtension, release energy by resetting
             if ( k > length(pretensionVector) )
