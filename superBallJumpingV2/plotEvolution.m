@@ -12,7 +12,7 @@
 % Output: - plot of avg perf over the generations
 %         - box plot of perf over the generations
 
-function plotEvolution(performance,Fitness,nbActuators,nbGeneration,nbIndividuals,nbActuations,k)
+function plotEvolution(performance,Fitness,nbActuators,nbGeneration,nbIndividuals,nbActuations,k,p)
 
     generationsVector = 1:nbGeneration;
     avgPerformance = mean(performance);
@@ -21,7 +21,7 @@ function plotEvolution(performance,Fitness,nbActuators,nbGeneration,nbIndividual
     plot(generationsVector, avgPerformance)
     hold on
     boxplot(performance);
-    title([num2str(nbActuations), ' actuation cycles , ', num2str(nbIndividuals), ' individuals, k = ',num2str(k), num2str(nbActuators),' init actuators, ']);
+    title([num2str(nbActuations), ' actuation cycles , ', num2str(nbIndividuals), ' individuals, k = ',num2str(k),', p = ',num2str(p),', ' num2str(nbActuators),' init actuators']);
     xlabel('Generation');
     ylabel(['Performance: ', Fitness, ' (m)']);
     grid on

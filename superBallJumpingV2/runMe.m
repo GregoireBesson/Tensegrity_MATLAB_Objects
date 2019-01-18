@@ -22,7 +22,7 @@ string_radius = 0.005;          % (m) minimum 5mm
 nodalMass = 0.2*ones(12,1);     % target: a 5kg robot                      % Mockup is 120g (10g per node) but equations cannot be solved, minimum mass is 3x larger so I divided g by 3
 pretension = 15;                % tension on strings at rest, (%)
 maxTension = 60;                % max tension on actuated strings, (%)
-K = 360;                        % String stiffness, (N/m)
+K = 500;                        % String stiffness, (N/m)
 c = 80;                         % viscous friction coef, (Ns/m)
 stringStiffness = K*ones(24,1); % String stiffness (N/m)
 barStiffness = 100000*ones(6,1);% Bar stiffness (N/m)
@@ -82,11 +82,11 @@ initMode = 'random';       % selectionMode can be 'manual' or 'random'
 nbActuators = 1+round(rand*(nbMotorsMax-1));  % should be in [1;12]        
 delayAct = 0;                   % in ms
 nbIndividuals = 10;             % size of population
-nbGeneration = 30;              % number of generation
-nbActuationCycle = 2;           % size of actuation sequence
+nbGeneration = 20;              % number of generation
+nbActuationCycle = 5;           % size of actuation sequence
 k = 5;                          % selection parameter (remove k worst ind.)
-p = 0.2;                        % probability of mutation
-fitness = 'jump';               % perf to be evaluated (jump, dist or jumpDist)              
+p = 0.3;                        % probability of mutation
+fitness = 'dist';               % perf to be evaluated (Jump, Dist or Jump*Dist)
 
 traveledDist = zeros(nbIndividuals,1);
 distMax = zeros(nbIndividuals,1);
@@ -115,7 +115,7 @@ for g = 1:nbGeneration
             % manual initialization for testing
             elseif (strcmpi(initMode,'manual'))
                 % load the best individual from previous run
-                load('results','BestIndividual');
+                load('dist1','BestIndividual');
                 genes(1,1,:,:) = BestIndividual;
                 
                 %     motors:     1  2  3  4  5  6  7  8  9 10 11 12
@@ -222,13 +222,13 @@ for g = 1:nbGeneration
     %% Evaluation
     
     %Select which performance to be evaluated
-    if (strcmpi(fitness,'jump'))
+    if (strcmpi(fitness,'Jump'))
         performance(:,g) = zmax;
-    elseif (strcmpi(fitness,'dist'))
+    elseif (strcmpi(fitness,'Dist'))
         performance(:,g) = traveledDist;
-    elseif (strcmpi(fitness,'distMax'))
+    elseif (strcmpi(fitness,'DistMax'))
         performance(:,g) = distMax;
-    elseif (strcmpi(fitness,'distJump'))
+    elseif (strcmpi(fitness,'Dist*Jump'))
         performance(:,g) = traveledDist.*zmax;
     else 
         error('Unknown fitness performance');
@@ -250,6 +250,6 @@ end
 %% Save and plot 
 
 BestIndividual = genes(nbGeneration,indexes(end),:,:);
-save('results.mat','BestIndividual','genes','fitness','performance')
+save('dist2p03.mat','BestIndividual','genes','fitness','performance')
 
-plotEvolution(performance,fitness,nbActuators,nbGeneration,nbIndividuals,nbActuationCycle,k);
+plotEvolution(performance,fitness,nbActuators,nbGeneration,nbIndividuals,nbActuationCycle,k,p);

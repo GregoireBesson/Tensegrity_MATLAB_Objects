@@ -19,7 +19,7 @@
 function plotData(obj,plotObj,tspan,i,nbLoop,plotCmd)
 
 persistent X Y Z f2 timeVector membersLengthDataStore Zmax DistMax... 
-    stringRestLengthDataStore stringTensionsDataStore stringToPlot CoM
+    stringRestLengthDataStore stringTensionsDataStore stringToPlot CoM goal
 
 % initialisation
 if (i==1)
