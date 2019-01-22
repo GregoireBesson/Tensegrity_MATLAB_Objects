@@ -78,20 +78,21 @@ nodes(:,3) = nodes(:,3) + CoMz;             % shift all the nodes in z
 %plot sim Data 'NoPlot', 'PostSim' or 'RealTime' (make sim much slower!)
 displayData = 'NoPlot'; 
 displaySimulation = 0;          % boolean to display every simulation
-initMode = 'random';       % selectionMode can be 'manual' or 'random'
+initMode = 'random';            % selectionMode, 'manual' or 'random'
 nbActuators = 1+round(rand*(nbMotorsMax-1));  % should be in [1;12]        
 delayAct = 0;                   % in ms
-nbIndividuals = 10;             % size of population
-nbGeneration = 20;              % number of generation
-nbActuationCycle = 5;           % size of actuation sequence
+nbIndividuals = 1;             % size of population
+nbGeneration = 1;              % number of generation
+nbActuationCycle = 6;           % size of actuation sequence
 k = 5;                          % selection parameter (remove k worst ind.)
 p = 0.3;                        % probability of mutation
-fitness = 'dist';               % perf to be evaluated (Jump, Dist or Jump*Dist)
+fitness = 'DistToGoal';         % Jump, Dist, Jump*Dist or DistToGoal
+goal = [1.5 1.5];                   % X Y coordinates of the wanted goal
 
 traveledDist = zeros(nbIndividuals,1);
 distMax = zeros(nbIndividuals,1);
 zmax = zeros(nbIndividuals,1);
-actuatedStrings = zeros(nbIndividuals, nbIndividuals, 2*nbActuators);
+dist2goal = zeros(nbIndividuals,1);
 % initialization of the actuator genome, 1=actuated, 0=not
 genes = zeros(nbGeneration, nbIndividuals, nbActuationCycle, 12);
 performance = zeros(nbIndividuals, nbGeneration);
@@ -115,7 +116,7 @@ for g = 1:nbGeneration
             % manual initialization for testing
             elseif (strcmpi(initMode,'manual'))
                 % load the best individual from previous run
-                load('dist1','BestIndividual');
+                load('output/distToX1Y1p04c6','BestIndividual');
                 genes(1,1,:,:) = BestIndividual;
                 
                 %     motors:     1  2  3  4  5  6  7  8  9 10 11 12
@@ -146,80 +147,88 @@ for g = 1:nbGeneration
         
         %% Creation of the structure
         
-        % Simulation and plot timesteps
-        delT = 0.001;                   % timestep for dynamic sim in seconds
-        delTUKF  = 0.001;               % timestep for the U Kalman Filter
+        % recreate structure and run simulation only on new individuals
+        if ( g==1 || (g>1 && ismember(i,indexes(1:k))) )
         
-        % creation of the object superBall
-        superBall = TensegrityStructure(nodes, strings, bars, F, stringStiffness,...
-            barStiffness, stringDamping, nodalMass, delT, delTUKF, ...
-            stringRestLength, initMode);
-        
-        %% Create dynamics display
-        
-        superBallDynamicsPlot = TensegrityPlot(nodes, strings, bars, ...
-            bar_radius, string_radius);
-        
-        if (displaySimulation)
-        
-            f = figure('units','normalized','outerposition',[0 0 1 1]);
-            % use a method within TensegrityPlot class to generate a plot of the
-            % structure
-            generatePlot(superBallDynamicsPlot,gca);
-            updatePlot(superBallDynamicsPlot);
+            % Simulation and plot timesteps
+            delT = 0.001;                   % timestep for dynamic sim in seconds
+            delTUKF  = 0.001;               % timestep for the U Kalman Filter
             
-            %settings to make it pretty
-            axis equal
-            view(90, 0); % X-Z view
-            view(3)
-            grid on
-            light('Position',[0 0 10],'Style','local')
-            lighting flat
-            colormap([0.8 0.8 1; 0 1 1]);
-            lims = 2*barLength;
-            xlim([-1.2*lims 1.2*lims])
-            ylim([-1.2*lims 1.2*lims])
-            zlim(1*[-0.01 lims])
-            % plot the ground
-            hold on
-            [x, y] = meshgrid(-3*barLength:0.1:3*barLength); % Generate x and y data
-            z = -bar_radius*ones(size(x, 1)); % Generate z data
-            C = 2*x.*y;
-            ground = surf(x, y, z); % Plot the surface
-            ground.EdgeColor = 'none';
+            % creation of the object superBall
+            superBall = TensegrityStructure(nodes, strings, bars, F, stringStiffness,...
+                barStiffness, stringDamping, nodalMass, delT, delTUKF, ...
+                stringRestLength, initMode);
             
-            drawnow; % Draw and hold initial conditions
-            %pause(0);
-        
+            %% Create dynamics display
+            
+            superBallDynamicsPlot = TensegrityPlot(nodes, strings, bars, ...
+                bar_radius, string_radius);
+            
+            if (displaySimulation)
+                
+                f = figure('units','normalized','outerposition',[0 0 1 1]);
+                % use a method within TensegrityPlot class to generate a plot of the
+                % structure
+                generatePlot(superBallDynamicsPlot,gca);
+                updatePlot(superBallDynamicsPlot);
+                
+                %settings to make it pretty
+                axis equal
+                view(90, 0); % X-Z view
+                view(3)
+                grid on
+                light('Position',[0 0 10],'Style','local')
+                lighting flat
+                colormap([0.8 0.8 1; 0 1 1]);
+                lims = 2*barLength;
+                xlim([-1.2*lims 1.2*lims])
+                ylim([-1.2*lims 1.2*lims])
+                zlim(1*[-0.01 lims])
+                % plot the ground
+                hold on
+                [x, y] = meshgrid(-3*barLength:0.1:3*barLength); % Generate x and y data
+                z = -bar_radius*ones(size(x, 1)); % Generate z data
+                C = 2*x.*y;
+                ground = surf(x, y, z); % Plot the surface
+                ground.EdgeColor = 'none';
+                
+                drawnow; % Draw and hold initial conditions
+                %pause(0);
+                
+            end
+            
+            %% Run dynamics
+            
+            displayTimespan = 1/20;     % 20fps
+            % set the dynamics parameters
+            myDynamicsUpdate(superBall, superBallDynamicsPlot,...
+                displayTimespan, pretension, maxTension, l0,...
+                actuators,i, nbActuationCycle, displaySimulation,genes,g, firstStringsToActuate);
+            
+            nbLoop = round(240*nbActuationCycle); %2000 -> 100sec de simulation
+            
+            % Simulation loop
+            for l = 1:nbLoop
+                myDynamicsUpdate();
+                
+                plotData(superBall,superBallDynamicsPlot,displayTimespan,...
+                    l,nbLoop,displayData,goal);
+            end
+            
+            %% Simulation results
+            
+            traveledDist(i) = superBall.TraveledDist;
+            distMax(i) = superBall.DistMax;
+            zmax(i) = superBall.Zmax;
+            dist2goal(i) = superBall.Dist2goal;
+       
         end
-        
-        %% Run dynamics
-        
-        displayTimespan = 1/20;     % 20fps
-        % set the dynamics parameters
-        myDynamicsUpdate(superBall, superBallDynamicsPlot,...
-            displayTimespan, pretension, maxTension, l0,...
-            actuators,i, nbActuationCycle, displaySimulation,genes,g, firstStringsToActuate);
-        
-        nbLoop = round(240*nbActuationCycle); %2000 -> 100sec de simulation
-        
-        % Simulation loop
-        for l = 1:nbLoop
-            myDynamicsUpdate();
-            
-            plotData(superBall,superBallDynamicsPlot,displayTimespan,...
-                l,nbLoop,displayData);
-        end
-        
-        %% Simulation results
-        
-        traveledDist(i) = superBall.TraveledDist;
-        distMax(i) = superBall.DistMax;
-        zmax(i) = superBall.Zmax;
-        
     end
     
     %% Evaluation
+    
+    % sorting mode by default
+    sortingMode = 'ascend';
     
     %Select which performance to be evaluated
     if (strcmpi(fitness,'Jump'))
@@ -230,12 +239,21 @@ for g = 1:nbGeneration
         performance(:,g) = distMax;
     elseif (strcmpi(fitness,'Dist*Jump'))
         performance(:,g) = traveledDist.*zmax;
+    elseif (strcmpi(fitness,'DistToGoal'))
+        performance(:,g) = dist2goal;
+        % change the sorting mode, cause we want to minimize this fitness
+        sortingMode = 'descend';
     else 
         error('Unknown fitness performance');
     end
     
-    % sort the perfomances
-    [sortedPerformance, indexes] = sort(performance(:,g),'ascend');
+    % copy the perf of the unchanged indiv from last generation
+    if (g > 1)
+       performance(indexes(k+1:end),g) = performance(indexes(k+1:end),g-1);
+    end
+    
+    % sort the perfomances depending if we want to maximize or minimize Fit
+    [sortedPerformance, indexes] = sort(performance(:,g), sortingMode);
     
     %% Selection & Mutation
     
@@ -250,6 +268,6 @@ end
 %% Save and plot 
 
 BestIndividual = genes(nbGeneration,indexes(end),:,:);
-save('dist2p03.mat','BestIndividual','genes','fitness','performance')
+%save('output/distToX1_5Y1_5p03c6.mat','BestIndividual','genes','fitness','performance')
 
 plotEvolution(performance,fitness,nbActuators,nbGeneration,nbIndividuals,nbActuationCycle,k,p);

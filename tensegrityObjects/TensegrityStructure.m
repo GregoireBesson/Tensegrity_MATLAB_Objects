@@ -51,6 +51,7 @@ classdef TensegrityStructure < handle
         TraveledDist
         Zmax
         DistMax
+        Dist2goal
         selectionMode
         
     end

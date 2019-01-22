@@ -10,13 +10,14 @@
 %         - i   (silulation loop index)
 %         - nbLoop (total nb of simulation loops)
 %         - plotCmd (Plot command: 'RealTime' (super slow) or 'PostSim')
+%         - goalXY, (1x2) XY coordinates of the wanted end position
 %
 % Output: - suplot of the data of interest
 %         - TraveledDist (Euclidean Dist of CoM from start to end
 %         - Zmax (maximum jump height achieved)
 %         - DistMax (maximum distance from start reached along the sim)
 
-function plotData(obj,plotObj,tspan,i,nbLoop,plotCmd)
+function plotData(obj,plotObj,tspan,i,nbLoop,plotCmd,goalXY)
 
 persistent X Y Z f2 timeVector membersLengthDataStore Zmax DistMax... 
     stringRestLengthDataStore stringTensionsDataStore stringToPlot CoM goal
@@ -39,6 +40,7 @@ if (i==1)
     stringToPlot = [9 10 11 15 23 24];
     Zmax = 0;
     DistMax = 0;
+    goal = goalXY;
 end
 
 % store Data
@@ -84,6 +86,7 @@ elseif strcmpi(plotCmd,'PostSim') && (i==nbLoop)
     obj.TraveledDist = sqrt((CoM(end,X)-CoM(1,X))^2 + (CoM(end,Y)-CoM(1,Y))^2);
     obj.Zmax = Zmax;
     obj.DistMax = DistMax;
+    obj.Dist2goal = sqrt((CoM(end,X)-goal(X))^2 + (CoM(end,Y)-goal(Y))^2);
     
     f2 = figure('Name','Data','NumberTitle','off');
     % Set Size and position
@@ -150,4 +153,5 @@ elseif strcmpi(plotCmd,'PostSim') && (i==nbLoop)
     obj.TraveledDist = sqrt((CoM(end,X)-CoM(1,X))^2 + (CoM(end,Y)-CoM(1,Y))^2);
     obj.Zmax = Zmax;
     obj.DistMax = DistMax;
+    obj.Dist2goal = sqrt((CoM(end,X)-goal(X))^2 + (CoM(end,Y)-goal(Y))^2);
 end

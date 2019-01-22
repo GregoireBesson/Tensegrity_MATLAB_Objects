@@ -18,13 +18,15 @@ function plotEvolution(performance,Fitness,nbActuators,nbGeneration,nbIndividual
     avgPerformance = mean(performance);
     
     figure();
-    plot(generationsVector, avgPerformance)
+    plot(generationsVector, avgPerformance,'r','LineWidth',1.5)
     hold on
     boxplot(performance);
-    title([num2str(nbActuations), ' actuation cycles , ', num2str(nbIndividuals), ' individuals, k = ',num2str(k),', p = ',num2str(p),', ' num2str(nbActuators),' init actuators']);
+    title([num2str(nbActuations), ' actuation cycles, ', num2str(nbIndividuals), ' indiv, k = ',num2str(k),', p = ',num2str(p)]);
     xlabel('Generation');
     ylabel(['Performance: ', Fitness, ' (m)']);
     grid on
+    legend('Average performance')
+    set(gca,'fontsize', 14);
     
 end
 
