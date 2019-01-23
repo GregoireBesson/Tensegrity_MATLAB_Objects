@@ -78,12 +78,12 @@ nodes(:,3) = nodes(:,3) + CoMz;             % shift all the nodes in z
 %plot sim Data 'NoPlot', 'PostSim' or 'RealTime' (make sim much slower!)
 displayData = 'NoPlot'; 
 displaySimulation = false;      % boolean to display every simulation
-saveResults = true;             % boolean to save results in a mat file
+saveResults = false;            % boolean to save results in a mat file
 initMode = 'random';            % actuators selection, 'manual' or 'random'
 nbActuators = 1+round(rand*(nbMotorsMax-1));  % should be in [1;12]        
 nbIndividuals = 3;              % size of population
-nbGeneration = 3;               % number of generation
-nbActuationCycle = 2;           % size of actuation sequence
+nbGeneration = 2;               % number of generation
+nbActuationCycle = 3;           % size of actuation sequence
 delayAct = 0;                   % in ms
 
 % Fitness function
@@ -92,10 +92,11 @@ goal = [1.5 1.5];               % X Y coordinates of the wanted goal
 
 % Selection parameters
 selectionMode = 'tournament';   % ranking or tournament
-elitism = true;                 % copy e elites without mutation if true
-e = 1;                          % number of elites to be copied 
 k = 5;                          % ranking number (ranking selection)
 t = 2;                          % tournament size (tournament selection)
+elitism = true;                 % copy e elites without mutation if true
+e = 1;                          % number of elites to be copied 
+
 
 % Mutation parameters
 p = 0.3;                        % probability of mutation
@@ -112,7 +113,14 @@ dist2goal = zeros(nbIndividuals,1);
 performance = zeros(nbIndividuals, nbGeneration);
 
 for g = 1:nbGeneration
+    
+     % Status Flag
+     fprintf('----------------Starting generation %d/%d \n',g,nbGeneration);
+    
     for i = 1:nbIndividuals
+        
+        % Status Flag
+        fprintf('Starting individual %d/%d \n',i,nbIndividuals);
         
         % reset the actuation counter for each individual
         actuationCycleCounter = 1;
@@ -295,7 +303,7 @@ end
 if (saveResults)
     [~,BestIndividualIndex] = max(performance(:,end));
     BestIndividual = genes(nbGeneration,BestIndividualIndex,:,:);
-    save('output/distT2e1p03.mat','BestIndividual','genes','fitness','performance')
+    save('output/distg30i30T2e1p03.mat','BestIndividual','genes','fitness','performance')
 end
 
 plotEvolution(performance,fitness,nbActuators,nbGeneration,nbIndividuals,nbActuationCycle,k,p);
