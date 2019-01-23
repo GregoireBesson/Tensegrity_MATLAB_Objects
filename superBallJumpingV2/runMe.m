@@ -77,28 +77,39 @@ nodes(:,3) = nodes(:,3) + CoMz;             % shift all the nodes in z
 
 %plot sim Data 'NoPlot', 'PostSim' or 'RealTime' (make sim much slower!)
 displayData = 'NoPlot'; 
-displaySimulation = 0;          % boolean to display every simulation
-initMode = 'random';            % selectionMode, 'manual' or 'random'
+displaySimulation = false;      % boolean to display every simulation
+saveResults = true;             % boolean to save results in a mat file
+initMode = 'random';            % actuators selection, 'manual' or 'random'
 nbActuators = 1+round(rand*(nbMotorsMax-1));  % should be in [1;12]        
+nbIndividuals = 3;              % size of population
+nbGeneration = 3;               % number of generation
+nbActuationCycle = 2;           % size of actuation sequence
 delayAct = 0;                   % in ms
-nbIndividuals = 1;             % size of population
-nbGeneration = 1;              % number of generation
-nbActuationCycle = 6;           % size of actuation sequence
-k = 5;                          % selection parameter (remove k worst ind.)
-p = 0.3;                        % probability of mutation
-fitness = 'DistToGoal';         % Jump, Dist, Jump*Dist or DistToGoal
-goal = [1.5 1.5];                   % X Y coordinates of the wanted goal
 
+% Fitness function
+fitness = 'Dist';               % Jump, Dist, Jump*Dist or DistToGoal
+goal = [1.5 1.5];               % X Y coordinates of the wanted goal
+
+% Selection parameters
+selectionMode = 'tournament';   % ranking or tournament
+elitism = true;                 % copy e elites without mutation if true
+e = 1;                          % number of elites to be copied 
+k = 5;                          % ranking number (ranking selection)
+t = 2;                          % tournament size (tournament selection)
+
+% Mutation parameters
+p = 0.3;                        % probability of mutation
+
+%Create the random number stream for reproducibility:
+rngParameters = RandStream('mlfg6331_64','Seed','Shuffle');
+
+% initialization of the actuator genome, 1=actuated, 0=not
+genes = zeros(nbGeneration, nbIndividuals, nbActuationCycle, 12);
 traveledDist = zeros(nbIndividuals,1);
 distMax = zeros(nbIndividuals,1);
 zmax = zeros(nbIndividuals,1);
 dist2goal = zeros(nbIndividuals,1);
-% initialization of the actuator genome, 1=actuated, 0=not
-genes = zeros(nbGeneration, nbIndividuals, nbActuationCycle, 12);
 performance = zeros(nbIndividuals, nbGeneration);
-
-%Create the random number stream for reproducibility:
-rngParameters = RandStream('mlfg6331_64','Seed','Shuffle');
 
 for g = 1:nbGeneration
     for i = 1:nbIndividuals
@@ -148,7 +159,10 @@ for g = 1:nbGeneration
         %% Creation of the structure
         
         % recreate structure and run simulation only on new individuals
-        if ( g==1 || (g>1 && ismember(i,indexes(1:k))) )
+        if ( g==1 || ...
+             g>1 && (strcmpi(selectionMode,'ranking')) && ismember(i,indexes(1:k)) || ...
+             g>1 && (strcmpi(selectionMode,'tournament')) && elitism==false || ...
+             g>1 && (strcmpi(selectionMode,'tournament')) && elitism && i>e ) 
         
             % Simulation and plot timesteps
             delT = 0.001;                   % timestep for dynamic sim in seconds
@@ -249,25 +263,39 @@ for g = 1:nbGeneration
     
     % copy the perf of the unchanged indiv from last generation
     if (g > 1)
-       performance(indexes(k+1:end),g) = performance(indexes(k+1:end),g-1);
+        if (strcmpi(selectionMode,'ranking'))
+            performance(indexes(k+1:end),g) = performance(indexes(k+1:end),g-1);
+        elseif ((strcmpi(selectionMode,'tournament')) && elitism)           % TODO correct BUG if e>2
+            performance(1:e,g) = sortedPerformance(end);
+        end
     end
     
+    %% Selection
+      
     % sort the perfomances depending if we want to maximize or minimize Fit
     [sortedPerformance, indexes] = sort(performance(:,g), sortingMode);
     
-    %% Selection & Mutation
+    if ( (g < nbGeneration) && (strcmpi(selectionMode,'tournament')) )
+        % fill the next generation with tournament method
+        genes = tournamentSelection(genes,nbIndividuals,performance,g,t,elitism,e,sortingMode);
+    end
+
+    %% Mutation
     
-    % replace the k worst indiv with mutated version of the k best
-    % the k best remained unchanged in the next generation
+    % mutate the individuals that need to be mutated depending on the
+    % selection method
     if (g < nbGeneration)
-        genes = genesMutation(genes,g,indexes,nbActuationCycle,k,p);
+        genes = genesMutation(genes,g,nbIndividuals,indexes,nbActuationCycle,k,p,selectionMode,elitism,e);
     end
 
 end
 
 %% Save and plot 
 
-BestIndividual = genes(nbGeneration,indexes(end),:,:);
-%save('output/distToX1_5Y1_5p03c6.mat','BestIndividual','genes','fitness','performance')
+if (saveResults)
+    [~,BestIndividualIndex] = max(performance(:,end));
+    BestIndividual = genes(nbGeneration,BestIndividualIndex,:,:);
+    save('output/distT2e1p03.mat','BestIndividual','genes','fitness','performance')
+end
 
 plotEvolution(performance,fitness,nbActuators,nbGeneration,nbIndividuals,nbActuationCycle,k,p);
