@@ -5,7 +5,8 @@
 % process on the k worst indivudual mutation here consists only on toggling
 % a motor between ON and OFF
 %
-% Inputs:   - genesIn(nbGen,nbIndiv,nbActCycle,nbMotors), current genome
+% Inputs:   - mutation method: hard or soft
+%           - genesIn(nbGen,nbIndiv,nbActCycle,nbMotors), current genome
 %           - g, generation counter
 %           - nbIndiv, population size
 %           - indexes, ascending sorted individuales regarding their perf
@@ -19,7 +20,7 @@
 % Output:   - genesOut(nbGen,nbIndiv,nbActCycle,nbMotors), updated genome
 %             containing all previous generations and the new one
 
-function genesOut = genesMutation(genesIn,g,nbIndiv,indexes,nbActuationCycle,k,p,selectionMode,elitism,e)
+function genesOut = genesMutation(mutation,genesIn,g,nbIndiv,indexes,nbActuationCycle,k,p,selectionMode,elitism,e)
 
 if (strcmpi(selectionMode,'ranking'))
 
@@ -32,14 +33,28 @@ if (strcmpi(selectionMode,'ranking'))
         % extract his genes (for all the actuation cycles)
         genesToMutate = genesIn(g,indexes(i),:,:);
         
-        % generate a random number value for each gene
-        x = rand(nbActuationCycle,12);
-        % all value under proba threshold fixed by user is mutated
-        mutateThis = x <= p;
-        genesToMutate(mutateThis) = ~genesToMutate(mutateThis);
-        
-        % put back the new genes in next generation
-        genesIn(g+1,indexes(i),:,:) = genesToMutate;
+        if strcmpi(mutation,'hard')
+            % generate a random number value for each gene
+            x = rand(nbActuationCycle,12);
+            % all value under proba threshold fixed by user is mutated
+            mutateThis = x <= p;
+            genesToMutate(mutateThis) = ~genesToMutate(mutateThis);
+            % put back the new genes in next generation
+            genesIn(g+1,indexes(i),:,:) = genesToMutate;
+        elseif strcmpi(mutation,'soft')
+            for c = 1:nbActuationCycle
+                % generate a random number value for each cycle
+                x = rand();
+                % probability of mutation of this cycle 
+                if (x <= p)
+                    % toggle a random gene in this cycle (between 1 to 12)
+                    randomGene = 1 + round(rand()*11);
+                    genesIn(g+1,i,c,randomGene) = ~genesIn(g+1,i,c,randomGene);
+                end
+            end
+        else 
+            error('Unknown mutation method ! \n');
+        end
     end
     
 elseif (strcmpi(selectionMode,'tournament'))
@@ -55,14 +70,29 @@ elseif (strcmpi(selectionMode,'tournament'))
         % extract genes of the indiv (for all the actuation cycles)
         genesToMutate = genesIn(g+1,i,:,:);
         
-        % generate a random number value for each gene
-        x = rand(nbActuationCycle,12);
-        % all value under proba threshold fixed by user is mutated
-        mutateThis = x <= p;
-        genesToMutate(mutateThis) = ~genesToMutate(mutateThis);
-        
-        % put back the new genes in the genome
-        genesIn(g+1,i,:,:) = genesToMutate;
+        if strcmpi(mutation,'hard')
+            % generate a random number value for each gene
+            x = rand(nbActuationCycle,12);
+            % all value under proba threshold fixed by user is mutated
+            mutateThis = x <= p;
+            genesToMutate(mutateThis) = ~genesToMutate(mutateThis);
+            % put back the new genes in the genome
+            genesIn(g+1,i,:,:) = genesToMutate;
+            
+        elseif strcmpi(mutation,'soft')
+            for c = 1:nbActuationCycle
+                % generate a random number for each cycle
+                x = rand();
+                % probability of mutation of this cycle 
+                if (x <= p)
+                    % toggle a random gene in this cycle (between 1 to 12)
+                    randomGene = 1 + round(rand()*11);
+                    genesIn(g+1,i,c,randomGene) = ~genesIn(g+1,i,c,randomGene);
+                end
+            end
+        else 
+            error('Unknown mutation method ! \n');
+        end
     end
 else 
     error('Unknown selection method');

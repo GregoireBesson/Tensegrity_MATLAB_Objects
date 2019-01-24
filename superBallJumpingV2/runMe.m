@@ -78,11 +78,12 @@ nodes(:,3) = nodes(:,3) + CoMz;             % shift all the nodes in z
 %plot sim Data 'NoPlot', 'PostSim' or 'RealTime' (make sim much slower!)
 displayData = 'NoPlot'; 
 displaySimulation = false;      % boolean to display every simulation
-saveResults = false;            % boolean to save results in a mat file
-initMode = 'random';            % actuators selection, 'manual' or 'random'
-nbActuators = 1+round(rand*(nbMotorsMax-1));  % should be in [1;12]        
-nbIndividuals = 3;              % size of population
-nbGeneration = 2;               % number of generation
+saveResults = true;             % boolean to save results in a mat file
+filename = 'output/distg20i15T2e1p02soft_contd.mat';
+initMode = 'manual';            % actuators selection, 'manual' or 'random'
+nbActuators = 3; %1+round(rand*(nbMotorsMax-1));  % should be in [1;12]        
+nbIndividuals = 15;             % size of population
+nbGeneration = 10;              % number of generation
 nbActuationCycle = 3;           % size of actuation sequence
 delayAct = 0;                   % in ms
 
@@ -99,7 +100,8 @@ e = 1;                          % number of elites to be copied
 
 
 % Mutation parameters
-p = 0.3;                        % probability of mutation
+mutation = 'soft';              % hard (all genes mutated) or soft (1/cycle)
+p = 0.2;                        % probability of mutation
 
 %Create the random number stream for reproducibility:
 rngParameters = RandStream('mlfg6331_64','Seed','Shuffle');
@@ -111,16 +113,17 @@ distMax = zeros(nbIndividuals,1);
 zmax = zeros(nbIndividuals,1);
 dist2goal = zeros(nbIndividuals,1);
 performance = zeros(nbIndividuals, nbGeneration);
+nbAvgActuatorsBestIndiv = zeros(1,nbGeneration);
 
 for g = 1:nbGeneration
     
      % Status Flag
-     fprintf('----------------Starting generation %d/%d \n',g,nbGeneration);
+     fprintf('------------------- Generation %d/%d \n',g,nbGeneration);
     
     for i = 1:nbIndividuals
         
         % Status Flag
-        fprintf('Starting individual %d/%d \n',i,nbIndividuals);
+        fprintf('Individual %d/%d \n',i,nbIndividuals);
         
         % reset the actuation counter for each individual
         actuationCycleCounter = 1;
@@ -134,9 +137,12 @@ for g = 1:nbGeneration
                              nbActuators,rngParameters);
             % manual initialization for testing
             elseif (strcmpi(initMode,'manual'))
-                % load the best individual from previous run
-                load('output/distToX1Y1p04c6','BestIndividual');
-                genes(1,1,:,:) = BestIndividual;
+                % load the best individual and the genome from previous run
+                load('output/distg20i15T2e1p02soft','BestIndividual','savedGenes');
+                % to just show the BestIndividual from a specific run
+                %genes(1,1,:,:) = BestIndividual;
+                % to continue an evolution from the last run
+                genes(1,:,:,:) = savedGenes(end,:,:,:);
                 
                 %     motors:     1  2  3  4  5  6  7  8  9 10 11 12
                 %genes(1,1,1,:) = [1  1  1  1  1  0  1  0  1  1  0  1];
@@ -283,6 +289,9 @@ for g = 1:nbGeneration
     % sort the perfomances depending if we want to maximize or minimize Fit
     [sortedPerformance, indexes] = sort(performance(:,g), sortingMode);
     
+    % compute the average number of actuator per cycle used by BestInd
+    nbAvgActuatorsBestIndiv(g) = length( find(genes(g,indexes(end),:,:)==1) )/nbActuationCycle;
+    
     if ( (g < nbGeneration) && (strcmpi(selectionMode,'tournament')) )
         % fill the next generation with tournament method
         genes = tournamentSelection(genes,nbIndividuals,performance,g,t,elitism,e,sortingMode);
@@ -293,17 +302,21 @@ for g = 1:nbGeneration
     % mutate the individuals that need to be mutated depending on the
     % selection method
     if (g < nbGeneration)
-        genes = genesMutation(genes,g,nbIndividuals,indexes,nbActuationCycle,k,p,selectionMode,elitism,e);
+        genes = genesMutation(mutation,genes,g,nbIndividuals,indexes,nbActuationCycle,k,p,selectionMode,elitism,e);
     end
 
 end
 
 %% Save and plot 
 
+fprintf('Evolution complete !\n');
+
 if (saveResults)
     [~,BestIndividualIndex] = max(performance(:,end));
     BestIndividual = genes(nbGeneration,BestIndividualIndex,:,:);
-    save('output/distg30i30T2e1p03.mat','BestIndividual','genes','fitness','performance')
+    savedGenes = genes;
+    save(filename,'BestIndividual','savedGenes','fitness','performance')
+    fprintf('Results saved \n');
 end
 
-plotEvolution(performance,fitness,nbActuators,nbGeneration,nbIndividuals,nbActuationCycle,k,p);
+plotEvolution(performance,fitness,nbActuators,nbGeneration,nbIndividuals,nbActuationCycle,k,p,nbAvgActuatorsBestIndiv);

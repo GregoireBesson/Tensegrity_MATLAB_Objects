@@ -248,7 +248,7 @@ classdef TensegrityStructure < handle
             kk = 1000;
             kFP = 20000;
             kFD = 5000;
-
+            
             sim = obj.simStruct;
             groundH = obj.groundHeight;
             M = sim.M; fN = sim.fN;
