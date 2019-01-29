@@ -92,7 +92,7 @@ fitness = 'Dist';               % Jump, Dist, Jump*Dist or DistToGoal
 goal = [1.5 1.5];               % X Y coordinates of the wanted goal
 
 % Selection parameters
-selectionMode = 'ranking';   % ranking or tournament
+selectionMode = 'tournament';   % ranking or tournament
 k = 5;                          % ranking number (ranking selection)
 t = 2;                          % tournament size (tournament selection)
 elitism = true;                 % copy e elites without mutation if true
@@ -334,4 +334,4 @@ if (saveResults)
     fprintf('Results saved \n');
 end
 
-plotEvolution(performance,fitness,nbActuators,nbGeneration,nbIndividuals,nbActuationCycle,k,p,nbAvgActuatorsBestIndiv);
+plotEvolution(performance,fitness,nbActuators,nbGeneration,nbIndividuals,nbActuationCycle,t,p,nbAvgActuatorsBestIndiv);

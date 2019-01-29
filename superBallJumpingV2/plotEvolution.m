@@ -12,24 +12,30 @@
 % Output: - plot of avg perf over the generations
 %         - box plot of perf over the generations
 
-function plotEvolution(performance,Fitness,nbActuators,nbGeneration,nbIndividuals,nbActuations,k,p,nbAvgActuatorsBestIndiv)
+function plotEvolution(performance,Fitness,nbActuators,nbGeneration,nbIndividuals,nbActuations,t,p,nbAvgActuatorsBestIndiv)
 
     generationsVector = 1:nbGeneration;
     avgPerformance = mean(performance);
+    if strcmpi(Fitness,'DistToGoal')
+        bestPerformance = min(performance);
+    else    
+        bestPerformance = max(performance);
+    end
     
     figure();
-    yyaxis left
-    plot(generationsVector, avgPerformance,'r','LineWidth',1.5)
+    %yyaxis left
+    plot(generationsVector, bestPerformance,'--','LineWidth',1.5)
     hold on
+    plot(generationsVector, avgPerformance,'r','LineWidth',1.5)
     boxplot(performance);
-    title([num2str(nbActuations), ' actuation cycles, ', num2str(nbIndividuals), ' indiv, k = ',num2str(k),', p = ',num2str(p),', ',num2str(nbActuators), ' init actuators']);
+    title([num2str(nbIndividuals), ' Indiv., ' ,num2str(nbActuators), ' actuators, ' ,num2str(nbActuations), ' actuation cycles, ', 'Tournmt size = ',num2str(t),', p_{mut} = ',num2str(p)]);
     xlabel('Generation');
     ylabel(['Performance: ', Fitness, ' (m)']);
-    yyaxis right
-    plot(generationsVector,nbAvgActuatorsBestIndiv,'--','LineWidth',1)
-    ylabel('Average number of motors per cycle (Best Indiv.)')
+    %yyaxis right
+    %plot(generationsVector,nbAvgActuatorsBestIndiv,'--','LineWidth',1)
+    %ylabel('Average number of motors per cycle (Best Indiv.)')
     grid on
-    legend('Avg performance','Avg nb of motors')
+    legend('Best performance','Avg performance')
     set(gca,'fontsize', 14);
     
 end
