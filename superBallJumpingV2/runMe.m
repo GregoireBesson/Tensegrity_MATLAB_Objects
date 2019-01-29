@@ -15,12 +15,12 @@ addpath('../tensegrityObjects')
 %% Define tensegrity structure
 
 % Physical parameters
-barLength = 0.5;                % SUPERball length, (m)
+barLength = 0.75;                % SUPERball length, (m)
 barSpacing = barLength/2;       % space between bars, usually l/2 (m)
 bar_radius = 0.01;              % (m)
 string_radius = 0.005;          % (m) minimum 5mm
 nodalMass = 0.2*ones(12,1);     % target: a 5kg robot                      % Mockup is 120g (10g per node) but equations cannot be solved, minimum mass is 3x larger so I divided g by 3
-pretension = 15;                % tension on strings at rest, (%)
+pretension = 10;                % tension on strings at rest, (%)
 maxTension = 60;                % max tension on actuated strings, (%)
 K = 500;                        % String stiffness, (N/m)
 c = 80;                         % viscous friction coef, (Ns/m)
@@ -76,19 +76,19 @@ nodes(:,3) = nodes(:,3) + CoMz;             % shift all the nodes in z
 %% Evolution parameters
 
 %plot sim Data 'NoPlot', 'PostSim' or 'RealTime' (make sim much slower!)
-displayData = 'NoPlot'; 
-displaySimulation = false;      % boolean to display every simulation
-saveResults = true;             % boolean to save results in a mat file
-filename = 'output/distg20i15T2e1p02soft_contd.mat';
+displayData = 'PostSim'; 
+displaySimulation = true;      % boolean to display every simulation
+saveResults = false;             % boolean to save results in a mat file
+filename = 'output/distToGoalg30i15T2e1p02soft_contd.mat';
 initMode = 'manual';            % actuators selection, 'manual' or 'random'
 nbActuators = 3; %1+round(rand*(nbMotorsMax-1));  % should be in [1;12]        
-nbIndividuals = 15;             % size of population
-nbGeneration = 10;              % number of generation
+nbIndividuals = 1;             % size of population
+nbGeneration = 1;              % number of generation
 nbActuationCycle = 3;           % size of actuation sequence
 delayAct = 0;                   % in ms
 
 % Fitness function
-fitness = 'Dist';               % Jump, Dist, Jump*Dist or DistToGoal
+fitness = 'DistToGoal';               % Jump, Dist, Jump*Dist or DistToGoal
 goal = [1.5 1.5];               % X Y coordinates of the wanted goal
 
 % Selection parameters
@@ -118,12 +118,12 @@ nbAvgActuatorsBestIndiv = zeros(1,nbGeneration);
 for g = 1:nbGeneration
     
      % Status Flag
-     fprintf('------------------- Generation %d/%d \n',g,nbGeneration);
+     fprintf('------------------- Generation    %d/%d -------------------\n',g,nbGeneration);
     
     for i = 1:nbIndividuals
         
         % Status Flag
-        fprintf('Individual %d/%d \n',i,nbIndividuals);
+        fprintf('Individual     %d/%d \n',i,nbIndividuals);
         
         % reset the actuation counter for each individual
         actuationCycleCounter = 1;
@@ -138,16 +138,16 @@ for g = 1:nbGeneration
             % manual initialization for testing
             elseif (strcmpi(initMode,'manual'))
                 % load the best individual and the genome from previous run
-                load('output/distg20i15T2e1p02soft','BestIndividual','savedGenes');
+                load('output/distToGoalg30i15T2e1p02soft','BestIndividual','savedGenes','fitness','performance');
                 % to just show the BestIndividual from a specific run
-                %genes(1,1,:,:) = BestIndividual;
+                genes(1,1,:,:) = BestIndividual;
                 % to continue an evolution from the last run
-                genes(1,:,:,:) = savedGenes(end,:,:,:);
+                %genes(1,:,:,:) = savedGenes(end,:,:,:);
                 
                 %     motors:     1  2  3  4  5  6  7  8  9 10 11 12
-                %genes(1,1,1,:) = [1  1  1  1  1  0  1  0  1  1  0  1];
-                %genes(1,1,2,:) = [0  1  0  1  1  0  0  1  0  1  1  1];
-                %genes(1,1,3,:) = [1 0 0 0 0 0 0 0 0 0 0 0];
+%                 genes(1,1,1,:) = [0  0  1  0  0  0  0  0  0  0  0  0];
+%                 genes(1,1,2,:) = [0  0  0  0  0  1  0  0  0  0  0  0];
+%                 genes(1,1,3,:) = [0  1  0  0  0  0  0  0  0  0  0  0];
                 
                 %actuatedStrings(i,1,:) = [13 14 9 10 3 7 19 20 23 24 1 2];
                 %actuatedStrings(i,2,:) = [3 7 5 6 19 20 9 10 21 22 12 16];
@@ -219,6 +219,15 @@ for g = 1:nbGeneration
                 C = 2*x.*y;
                 ground = surf(x, y, z); % Plot the surface
                 ground.EdgeColor = 'none';
+                
+                if (strcmpi(fitness,'DistToGoal'))
+                    r = 0.05;
+                    %theta = -pi:0.1:pi;
+                    
+                    [X,Y,Z]= sphere;
+                    surf(X*r+goal(1), Y*r+goal(2), Z*r+barLength*0.5);
+                end
+                axis equal;
                 
                 drawnow; % Draw and hold initial conditions
                 %pause(0);
@@ -312,7 +321,11 @@ end
 fprintf('Evolution complete !\n');
 
 if (saveResults)
-    [~,BestIndividualIndex] = max(performance(:,end));
+    if (strcmpi(sortingMode,'ascend'))
+        [~,BestIndividualIndex] = max(performance(:,end));
+    else
+        [~,BestIndividualIndex] = min(performance(:,end));
+    end
     BestIndividual = genes(nbGeneration,BestIndividualIndex,:,:);
     savedGenes = genes;
     save(filename,'BestIndividual','savedGenes','fitness','performance')
