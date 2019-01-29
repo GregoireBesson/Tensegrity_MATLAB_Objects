@@ -76,23 +76,23 @@ nodes(:,3) = nodes(:,3) + CoMz;             % shift all the nodes in z
 %% Evolution parameters
 
 %plot sim Data 'NoPlot', 'PostSim' or 'RealTime' (make sim much slower!)
-displayData = 'PostSim'; 
-displaySimulation = true;      % boolean to display every simulation
-saveResults = false;             % boolean to save results in a mat file
-filename = 'output/distToGoalg30i15T2e1p02soft_contd.mat';
-initMode = 'manual';            % actuators selection, 'manual' or 'random'
+displayData = 'NoPlot'; 
+displaySimulation = false;      % boolean to display every simulation
+saveResults = true;             % boolean to save results in a mat file
+filename = 'output/distG30I15K5p02soft.mat';
+initMode = 'random';            % actuators selection, 'manual' or 'random'
 nbActuators = 3; %1+round(rand*(nbMotorsMax-1));  % should be in [1;12]        
-nbIndividuals = 1;             % size of population
-nbGeneration = 1;              % number of generation
+nbIndividuals = 15;             % size of population
+nbGeneration = 30;              % number of generation
 nbActuationCycle = 3;           % size of actuation sequence
 delayAct = 0;                   % in ms
 
 % Fitness function
-fitness = 'DistToGoal';               % Jump, Dist, Jump*Dist or DistToGoal
+fitness = 'Dist';               % Jump, Dist, Jump*Dist or DistToGoal
 goal = [1.5 1.5];               % X Y coordinates of the wanted goal
 
 % Selection parameters
-selectionMode = 'tournament';   % ranking or tournament
+selectionMode = 'ranking';   % ranking or tournament
 k = 5;                          % ranking number (ranking selection)
 t = 2;                          % tournament size (tournament selection)
 elitism = true;                 % copy e elites without mutation if true
@@ -174,7 +174,7 @@ for g = 1:nbGeneration
         
         % recreate structure and run simulation only on new individuals
         if ( g==1 || ...
-             g>1 && (strcmpi(selectionMode,'ranking')) && ismember(i,indexes(1:k)) || ...
+             g>1 && (strcmpi(selectionMode,'ranking')) && ismember(i,indexes(1:end-k)) || ...
              g>1 && (strcmpi(selectionMode,'tournament')) && elitism==false || ...
              g>1 && (strcmpi(selectionMode,'tournament')) && elitism && i>e ) 
         
@@ -313,7 +313,9 @@ for g = 1:nbGeneration
     if (g < nbGeneration)
         genes = genesMutation(mutation,genes,g,nbIndividuals,indexes,nbActuationCycle,k,p,selectionMode,elitism,e);
     end
-
+    
+    
+    % TODO: save partial results after each generation, overwrite 
 end
 
 %% Save and plot 
