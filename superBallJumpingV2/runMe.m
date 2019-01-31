@@ -79,17 +79,17 @@ nodes(:,3) = nodes(:,3) + CoMz;             % shift all the nodes in z
 displayData = 'NoPlot'; 
 displaySimulation = false;      % boolean to display every simulation
 saveResults = true;             % boolean to save results in a mat file
-filename = 'output/distG30I15K5p02soft.mat';
 initMode = 'random';            % actuators selection, 'manual' or 'random'
+filename = 'output/distToGoalX-2Y0g30i15t2p02soft.mat';
 nbActuators = 3; %1+round(rand*(nbMotorsMax-1));  % should be in [1;12]        
 nbIndividuals = 15;             % size of population
 nbGeneration = 30;              % number of generation
-nbActuationCycle = 3;           % size of actuation sequence
+nbActuationCycle = 6;           % size of actuation sequence
 delayAct = 0;                   % in ms
 
 % Fitness function
-fitness = 'Dist';               % Jump, Dist, Jump*Dist or DistToGoal
-goal = [1.5 1.5];               % X Y coordinates of the wanted goal
+fitness = 'DistToGoal';         % Jump, Dist, Jump*Dist or DistToGoal
+goal = [-2 0];                   % X Y coordinates of the wanted goal
 
 % Selection parameters
 selectionMode = 'tournament';   % ranking or tournament
@@ -100,7 +100,7 @@ e = 1;                          % number of elites to be copied
 
 
 % Mutation parameters
-mutation = 'soft';              % hard (all genes mutated) or soft (1/cycle)
+mutation = 'soft';              % hard(all genes mutated) or soft(1/cycle)
 p = 0.2;                        % probability of mutation
 
 %Create the random number stream for reproducibility:
@@ -138,7 +138,7 @@ for g = 1:nbGeneration
             % manual initialization for testing
             elseif (strcmpi(initMode,'manual'))
                 % load the best individual and the genome from previous run
-                load('output/distToGoalg30i15T2e1p02soft','BestIndividual','savedGenes','fitness','performance');
+                load(filename,'BestIndividual','savedGenes','fitness','performance');
                 % to just show the BestIndividual from a specific run
                 genes(1,1,:,:) = BestIndividual;
                 % to continue an evolution from the last run
@@ -208,26 +208,24 @@ for g = 1:nbGeneration
                 light('Position',[0 0 10],'Style','local')
                 lighting flat
                 colormap([0.8 0.8 1; 0 1 1]);
-                lims = 2*barLength;
-                xlim([-1.2*lims 1.2*lims])
-                ylim([-1.2*lims 1.2*lims])
+                lims = barLength;
+                xlim([-3*lims 3*lims])
+                ylim([-3*lims 3*lims])
                 zlim(1*[-0.01 lims])
                 % plot the ground
                 hold on
-                [x, y] = meshgrid(-3*barLength:0.1:3*barLength); % Generate x and y data
+                [x, y] = meshgrid(-4*barLength:0.1:4*barLength); % Generate x and y data
                 z = -bar_radius*ones(size(x, 1)); % Generate z data
                 C = 2*x.*y;
                 ground = surf(x, y, z); % Plot the surface
                 ground.EdgeColor = 'none';
-                
+                % draw the goal as a small sphere
                 if (strcmpi(fitness,'DistToGoal'))
-                    r = 0.05;
-                    %theta = -pi:0.1:pi;
-                    
+                    r = 0.05; 
                     [X,Y,Z]= sphere;
                     surf(X*r+goal(1), Y*r+goal(2), Z*r+barLength*0.5);
                 end
-                axis equal;
+                %axis equal;
                 
                 drawnow; % Draw and hold initial conditions
                 %pause(0);
@@ -242,7 +240,7 @@ for g = 1:nbGeneration
                 displayTimespan, pretension, maxTension, l0,...
                 actuators,i, nbActuationCycle, displaySimulation,genes,g, firstStringsToActuate);
             
-            nbLoop = round(240*nbActuationCycle); %2000 -> 100sec de simulation
+            nbLoop = round(280*nbActuationCycle); %2000 -> 100sec de simulation
             
             % Simulation loop
             for l = 1:nbLoop
@@ -299,7 +297,9 @@ for g = 1:nbGeneration
     [sortedPerformance, indexes] = sort(performance(:,g), sortingMode);
     
     % compute the average number of actuator per cycle used by BestInd
-    nbAvgActuatorsBestIndiv(g) = length( find(genes(g,indexes(end),:,:)==1) )/nbActuationCycle;
+    if strcmpi(initMode,'random')
+        nbAvgActuatorsBestIndiv(g) = length( find(genes(g,indexes(end),:,:)==1) )/nbActuationCycle;
+    end
     
     if ( (g < nbGeneration) && (strcmpi(selectionMode,'tournament')) )
         % fill the next generation with tournament method
@@ -334,4 +334,4 @@ if (saveResults)
     fprintf('Results saved \n');
 end
 
-plotEvolution(performance,fitness,nbActuators,nbGeneration,nbIndividuals,nbActuationCycle,t,p,nbAvgActuatorsBestIndiv);
+%plotEvolution(performance,fitness,nbActuators,nbGeneration,nbIndividuals,nbActuationCycle,t,p,nbAvgActuatorsBestIndiv);

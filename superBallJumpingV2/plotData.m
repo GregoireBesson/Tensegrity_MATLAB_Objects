@@ -126,8 +126,8 @@ elseif strcmpi(plotCmd,'PostSim') && (i==nbLoop)
     plot3(CoM(1,X),CoM(1,Y),CoM(1,Z),'go','DisplayName','Start')
     plot3(CoM(end,X),CoM(end,Y),CoM(end,Z),'ro','DisplayName','End')
     lims = 1;
-    xlim([-1.2*lims 1.2*lims])
-    ylim([-1.2*lims 1.2*lims])
+    xlim([-2.1 2.1])
+    ylim([-2.1 2.1])
     zlim(1*[-0.01 lims])
     subplot(3,2,4);
     plot(CoM(:,X),CoM(:,Y),'DisplayName','CoM Trace')
@@ -139,8 +139,8 @@ elseif strcmpi(plotCmd,'PostSim') && (i==nbLoop)
     hold on
     plot(CoM(1,X),CoM(1,Y),'go','DisplayName','Start')
     plot(CoM(end,X),CoM(end,Y),'ro','DisplayName','End')
-    xlim([-1.2*lims 1.2*lims])
-    ylim([-1.2*lims 1.2*lims])
+    xlim([-2.1 2.1])
+    ylim([-2.1 2.1])
     subplot(3,2,6);
     plot(timeVector,CoM(:,Z))
     title('CoM height')
@@ -149,9 +149,10 @@ elseif strcmpi(plotCmd,'PostSim') && (i==nbLoop)
     grid on
     
     %No plot, just store Dist and Zmax
-    elseif strcmpi(plotCmd,'NoPlot') && (i==nbLoop)
+elseif strcmpi(plotCmd,'NoPlot') && (i==nbLoop)
     obj.TraveledDist = sqrt((CoM(end,X)-CoM(1,X))^2 + (CoM(end,Y)-CoM(1,Y))^2);
     obj.Zmax = Zmax;
     obj.DistMax = DistMax;
     obj.Dist2goal = sqrt((CoM(end,X)-goal(X))^2 + (CoM(end,Y)-goal(Y))^2);
+
 end
