@@ -2,6 +2,7 @@
 % generation number
 %
 % Inputs: - performance (nbIndiv x nbGeneration matric containing perf value)
+%         - sortedPerformance (from the worst to best perf)
 %         - Fitness (Performance to be evaluated: jump, dist or jumpxdist)
 %         - nbActuators (at the same time)
 %         - nbGeneration 
@@ -12,7 +13,7 @@
 % Output: - plot of avg perf over the generations
 %         - box plot of perf over the generations
 
-function plotEvolution(performance,Fitness,nbActuators,nbGeneration,nbIndividuals,nbActuations,t,p,nbAvgActuatorsBestIndiv)
+function plotEvolution(performance,sortedPerformance,Fitness,nbActuators,nbGeneration,nbIndividuals,nbActuations,t,p,nbAvgActuatorsBestIndiv)
 
     generationsVector = 1:nbGeneration;
     avgPerformance = mean(performance);
@@ -23,6 +24,7 @@ function plotEvolution(performance,Fitness,nbActuators,nbGeneration,nbIndividual
     end
     
     figure();
+        
     yyaxis left
     plot(generationsVector, bestPerformance,'--','LineWidth',1.5)
     hold on
@@ -36,6 +38,15 @@ function plotEvolution(performance,Fitness,nbActuators,nbGeneration,nbIndividual
     ylabel('Average number of motors per cycle (Best Indiv.)')
     grid on
     legend('Best performance','Avg performance','Nmb of motors')
+    set(gca,'fontsize', 14);
+    
+    figure();
+    
+    bar(sortedPerformance)
+    title('Sorted performance of last generation');
+    xlabel('Individuals');
+    ylabel(['Performance: ', Fitness, ' (m)']);
+    grid on
     set(gca,'fontsize', 14);
     
 end

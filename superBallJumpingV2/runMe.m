@@ -15,14 +15,14 @@ addpath('../tensegrityObjects')
 %% Define tensegrity structure
 
 % Physical parameters
-barLength = 0.75;                % SUPERball length, (m)
+barLength = 0.85;               % SUPERball length, (m)
 barSpacing = barLength/2;       % space between bars, usually l/2 (m)
 bar_radius = 0.01;              % (m)
 string_radius = 0.005;          % (m) minimum 5mm
-nodalMass = 0.2*ones(12,1);     % target: a 5kg robot                      % Mockup is 120g (10g per node) but equations cannot be solved, minimum mass is 3x larger so I divided g by 3
+nodalMass = 0.17*ones(12,1);    % target: a 2kg robot                      
 pretension = 10;                % tension on strings at rest, (%)
 maxTension = 60;                % max tension on actuated strings, (%)
-K = 500;                        % String stiffness, (N/m)
+K = 400;                        % String stiffness, (N/m)
 c = 80;                         % viscous friction coef, (Ns/m)
 stringStiffness = K*ones(24,1); % String stiffness (N/m)
 barStiffness = 100000*ones(6,1);% Bar stiffness (N/m)
@@ -76,15 +76,15 @@ nodes(:,3) = nodes(:,3) + CoMz;             % shift all the nodes in z
 %% Evolution parameters
 
 %plot sim Data 'NoPlot', 'PostSim' or 'RealTime' (make sim much slower!)
-displayData = 'NoPlot'; 
-displaySimulation = false;      % boolean to display every simulation
-saveResults = true;             % boolean to save results in a mat file
+displayData = 'PostSim'; 
+displaySimulation = true;      % boolean to display every simulation
+saveResults = false;             % boolean to save results in a mat file
 initMode = 'random';            % actuators selection, 'manual' or 'random'
-filename = 'output/distToGoalX-2Y0g30i15t2p02soft.mat';
-nbActuators = 3; %1+round(rand*(nbMotorsMax-1));  % should be in [1;12]        
-nbIndividuals = 15;             % size of population
-nbGeneration = 30;              % number of generation
-nbActuationCycle = 6;           % size of actuation sequence
+filename = 'output/distToGoalMonteCarlo.mat';
+nbActuators = 6; %1+round(rand*(nbMotorsMax-1));  % should be in [1;12]        
+nbIndividuals = 1 ;            % size of population
+nbGeneration = 1;               % number of generation
+nbActuationCycle = 3;           % size of actuation sequence
 delayAct = 0;                   % in ms
 
 % Fitness function
@@ -334,4 +334,4 @@ if (saveResults)
     fprintf('Results saved \n');
 end
 
-%plotEvolution(performance,fitness,nbActuators,nbGeneration,nbIndividuals,nbActuationCycle,t,p,nbAvgActuatorsBestIndiv);
+%plotEvolution(performance,sortedPerformance,fitness,nbActuators,nbGeneration,nbIndividuals,nbActuationCycle,t,p,nbAvgActuatorsBestIndiv);
