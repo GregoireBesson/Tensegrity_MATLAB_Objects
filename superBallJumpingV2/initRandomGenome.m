@@ -4,24 +4,26 @@
 % Intitializes the genome with random actuators
 %
 % Inputs: - nbActuationCycle
-%         - nbActuators, to actuate
-%         - nbIndiv, size of poupulation
+%         - AvlblActuators, list of available actuators
+%         - nbUsedActuators, nb of actuators we want to actu simultaneously
 %         - rngParam, for the repeatability        
-%         - indiv, individual counter
 %
 % Output: - genesOut, (nbActuation x 12) genome output for nbAct of 1 indiv
 
-function genesOut = initRandomGenome(nbActuationCycle,nbActuators,rngParam)
+function genesOut = initRandomGenome(nbActuationCycle,AvlblActuators,nbUsedActuators,rngParam)
     
     genes = zeros(nbActuationCycle,12);
-
+    nbAvlAct = length(AvlblActuators);
+    
     for c = 1:nbActuationCycle
         
-        % Draw nbActuators unique values from the integers 1 to 1.
-        randomIndexes = datasample(rngParam,1:12,nbActuators,'Replace',false);
+        % Draw random indexes from the integers 1 to nbAvlAct.
+        randomIndexes = datasample(rngParam,1:nbAvlAct,nbUsedActuators,'Replace',false);
+        % indexes are used to find the actuators 
+        usedActuators = AvlblActuators(randomIndexes);
         
         % set the motors to be actuated
-        genes(c,randomIndexes) = 1;
+        genes(c,usedActuators) = 1;
         
     end
     

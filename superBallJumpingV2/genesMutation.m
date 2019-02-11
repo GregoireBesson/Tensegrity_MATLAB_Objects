@@ -10,6 +10,7 @@
 %           - g, generation counter
 %           - nbIndiv, population size
 %           - indexes, ascending sorted individuales regarding their perf
+%           - AvlblActuators, list of available actuators
 %           - nbActuationCycle
 %           - k, selection parameter: worst k indiv mutate
 %           - p, probability of mutation 0 < p < 1
@@ -20,7 +21,7 @@
 % Output:   - genesOut(nbGen,nbIndiv,nbActCycle,nbMotors), updated genome
 %             containing all previous generations and the new one
 
-function genesOut = genesMutation(mutation,genesIn,g,nbIndiv,indexes,nbActuationCycle,k,p,selectionMode,elitism,e)
+function genesOut = genesMutation(mutation,genesIn,g,nbIndiv,indexes,AvlblActuators,nbActuationCycle,k,p,selectionMode,elitism,e)
 
 if (strcmpi(selectionMode,'ranking'))
 
@@ -51,7 +52,7 @@ if (strcmpi(selectionMode,'ranking'))
                     randomGene = 1 + round(rand()*11);
                     genesIn(g+1,i,c,randomGene) = ~genesIn(g+1,i,c,randomGene);
                 end
-            end
+            end       
         else 
             error('Unknown mutation method ! \n');
         end
@@ -90,6 +91,31 @@ elseif (strcmpi(selectionMode,'tournament'))
                     genesIn(g+1,i,c,randomGene) = ~genesIn(g+1,i,c,randomGene);
                 end
             end
+            
+        elseif strcmpi(mutation,'ConstNbAct')
+            for c = 1:nbActuationCycle
+                % generate a random number for each cycle
+                x = rand();
+                % probability of mutation of this cycle 
+                if (x <= p)
+                    
+                    %find wich actuators were actuates at that cycle
+                    prevAct = find(genesIn(g+1,i,c,:)==1);
+                    nbAct = length(prevAct);
+                    
+                    % pick one randomly to turn off
+                    indexToTurnOff = 1+round(rand*(nbAct-1));
+                    genesIn(g+1,i,c,prevAct(indexToTurnOff)) = 0;
+                    
+                    % turn on an available motor
+                    indexesNotUsedAct = ~ismember(AvlblActuators,prevAct);
+                    notUsedAct = AvlblActuators(indexesNotUsedAct);
+                    nbNotUsedAct = length(notUsedAct);
+                    indexToTurnOn = 1+round(rand*(nbNotUsedAct-1));
+                    genesIn(g+1,i,c,notUsedAct(indexToTurnOn)) = 1;                   
+                end
+            end  
+            
         else 
             error('Unknown mutation method ! \n');
         end

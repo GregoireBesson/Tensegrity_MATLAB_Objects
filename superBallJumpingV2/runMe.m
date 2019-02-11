@@ -19,7 +19,8 @@ barLength = 0.85;               % SUPERball length, (m)
 barSpacing = barLength/2;       % space between bars, usually l/2 (m)
 bar_radius = 0.01;              % (m)
 string_radius = 0.005;          % (m) minimum 5mm
-nodalMass = 0.17*ones(12,1);    % target: a 2kg robot                      
+weightEmptyEndCap = 0.100;       % (kg)
+weightActEndCap =0.200;          % (kg)
 pretension = 10;                % tension on strings at rest, (%)
 maxTension = 60;                % max tension on actuated strings, (%)
 K = 400;                        % String stiffness, (N/m)
@@ -76,19 +77,24 @@ nodes(:,3) = nodes(:,3) + CoMz;             % shift all the nodes in z
 %% Evolution parameters
 
 %plot sim Data 'NoPlot', 'PostSim' or 'RealTime' (make sim much slower!)
-displayData = 'PostSim'; 
-displaySimulation = true;      % boolean to display every simulation
-saveResults = false;             % boolean to save results in a mat file
+displayData = 'NoPlot'; 
+displaySimulation = false;      % boolean to display every simulation
+saveResults = true;             % boolean to save results in a mat file
 initMode = 'random';            % actuators selection, 'manual' or 'random'
-filename = 'output/distToGoalMonteCarlo.mat';
-nbActuators = 6; %1+round(rand*(nbMotorsMax-1));  % should be in [1;12]        
-nbIndividuals = 1 ;            % size of population
-nbGeneration = 1;               % number of generation
+filename = 'output/dist3over6motI15G50c3T2.mat';
+% number of end cap actuated on the robot 
+nbAvlbleActuators = 6; %1+round(rand*(nbMotorsMax-1));  % should be in [1;12] 
+% number of end cap actuated simultaneously should be in [1:nbAvlbleActuators]
+nbUsedActuators = 3; %1+round(rand*(nbAvailableActuators-1)); 
+% update the weight of the robot considering the number of actuators
+nodalMass = (nbAvlbleActuators*weightActEndCap +  (12-nbAvlbleActuators)*weightEmptyEndCap)/12 *ones(12,1);
+nbIndividuals = 15;             % size of population
+nbGeneration = 50;              % number of generation
 nbActuationCycle = 3;           % size of actuation sequence
 delayAct = 0;                   % in ms
 
 % Fitness function
-fitness = 'DistToGoal';         % Jump, Dist, Jump*Dist or DistToGoal
+fitness = 'Dist';         % Jump, Dist, Jump*Dist or DistToGoal
 goal = [-2 0];                   % X Y coordinates of the wanted goal
 
 % Selection parameters
@@ -100,11 +106,14 @@ e = 1;                          % number of elites to be copied
 
 
 % Mutation parameters
-mutation = 'soft';              % hard(all genes mutated) or soft(1/cycle)
+mutation = 'ConstNbAct';        % hard(all genes mutated), soft(1/cycle), 
+                                % ConstNbAct (change 1act with 1available
 p = 0.2;                        % probability of mutation
 
 %Create the random number stream for reproducibility:
 rngParameters = RandStream('mlfg6331_64','Seed','Shuffle');
+%Draw a random set of location for the actuators, same for all the indiv
+AvlblActuators = datasample(rngParameters,1:12,nbAvlbleActuators,'Replace',false);
 
 % initialization of the actuator genome, 1=actuated, 0=not
 genes = zeros(nbGeneration, nbIndividuals, nbActuationCycle, 12);
@@ -134,7 +143,7 @@ for g = 1:nbGeneration
             if (strcmpi(initMode,'random'))
                 %[actuatedStrings, genes, actuationCycleCounter] = randomStrings(actuators,nbActuators,rngParameters,actuatedStrings,genes,i,g,actuationCycleCounter);
                 genes(1,i,:,:) = initRandomGenome(nbActuationCycle,...
-                             nbActuators,rngParameters);
+                             AvlblActuators,nbUsedActuators,rngParameters);
             % manual initialization for testing
             elseif (strcmpi(initMode,'manual'))
                 % load the best individual and the genome from previous run
@@ -311,7 +320,7 @@ for g = 1:nbGeneration
     % mutate the individuals that need to be mutated depending on the
     % selection method
     if (g < nbGeneration)
-        genes = genesMutation(mutation,genes,g,nbIndividuals,indexes,nbActuationCycle,k,p,selectionMode,elitism,e);
+        genes = genesMutation(mutation,genes,g,nbIndividuals,indexes,AvlblActuators,nbActuationCycle,k,p,selectionMode,elitism,e);
     end
     
     
@@ -332,6 +341,6 @@ if (saveResults)
     savedGenes = genes;
     save(filename,'BestIndividual','savedGenes','fitness','performance')
     fprintf('Results saved \n');
+    
+    plotEvolution(performance,sortedPerformance,fitness,nbAvlbleActuators,nbUsedActuators,nbGeneration,nbIndividuals,nbActuationCycle,t,p,nbAvgActuatorsBestIndiv);
 end
-
-%plotEvolution(performance,sortedPerformance,fitness,nbActuators,nbGeneration,nbIndividuals,nbActuationCycle,t,p,nbAvgActuatorsBestIndiv);
