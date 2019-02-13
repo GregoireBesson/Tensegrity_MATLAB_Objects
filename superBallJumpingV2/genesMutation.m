@@ -61,6 +61,7 @@ if (strcmpi(selectionMode,'ranking'))
 elseif (strcmpi(selectionMode,'tournament'))
     
     start = 1;
+    nbAvlAct = length(AvlblActuators);
     
     % don't mutate the elites if elitism enabled
     if (elitism)
@@ -87,7 +88,8 @@ elseif (strcmpi(selectionMode,'tournament'))
                 % probability of mutation of this cycle 
                 if (x <= p)
                     % toggle a random gene in this cycle (between 1 to 12)
-                    randomGene = 1 + round(rand()*11);
+                    randomGeneIndex = 1 + round(rand()*(nbAvlAct-1));
+                    randomGene = AvlblActuators(randomGeneIndex);
                     genesIn(g+1,i,c,randomGene) = ~genesIn(g+1,i,c,randomGene);
                 end
             end
