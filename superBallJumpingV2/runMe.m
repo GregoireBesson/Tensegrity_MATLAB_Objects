@@ -81,21 +81,21 @@ displayData = 'NoPlot';
 displaySimulation = false;      % boolean to display every simulation
 saveResults = true;             % boolean to save results in a mat file
 initMode = 'random';            % actuators selection, 'manual' or 'random'
-filename = 'output/dist3over6motI15G50c3T2.mat';
+filename = 'output/distToGoal4over6MotI15G30c3t2.mat';
 % number of end cap actuated on the robot 
 nbAvlbleActuators = 6; %1+round(rand*(nbMotorsMax-1));  % should be in [1;12] 
 % number of end cap actuated simultaneously should be in [1:nbAvlbleActuators]
-nbUsedActuators = 3; %1+round(rand*(nbAvailableActuators-1)); 
+nbUsedActuators = 4; %1+round(rand*(nbAvailableActuators-1)); 
 % update the weight of the robot considering the number of actuators
 nodalMass = (nbAvlbleActuators*weightActEndCap +  (12-nbAvlbleActuators)*weightEmptyEndCap)/12 *ones(12,1);
-nbIndividuals = 15;             % size of population
-nbGeneration = 50;              % number of generation
+nbIndividuals = 15;              % size of population
+nbGeneration = 30;               % number of generation
 nbActuationCycle = 3;           % size of actuation sequence
 delayAct = 0;                   % in ms
 
 % Fitness function
-fitness = 'Dist';         % Jump, Dist, Jump*Dist or DistToGoal
-goal = [-2 0];                   % X Y coordinates of the wanted goal
+fitness = 'DistToGoal';         % Jump, Dist, Jump*Dist or DistToGoal
+goal = [0 -2];                  % X Y coordinates of the wanted goal
 
 % Selection parameters
 selectionMode = 'tournament';   % ranking or tournament
@@ -106,14 +106,19 @@ e = 1;                          % number of elites to be copied
 
 
 % Mutation parameters
-mutation = 'ConstNbAct';        % hard(all genes mutated), soft(1/cycle), 
-                                % ConstNbAct (change 1act with 1available
+if (nbUsedActuators == nbAvlbleActuators)
+    mutation = 'soft';
+else
+    mutation = 'soft';    % hard(all genes mutated), soft(1/cycle), 
+end                             % ConstNbAct (change 1act with 1available
 p = 0.2;                        % probability of mutation
 
 %Create the random number stream for reproducibility:
 rngParameters = RandStream('mlfg6331_64','Seed','Shuffle');
 %Draw a random set of location for the actuators, same for all the indiv
 AvlblActuators = datasample(rngParameters,1:12,nbAvlbleActuators,'Replace',false);
+% OR user choose the end cap that are actuated (comment if you want rndm)
+%AvlblActuators = [1 4 5 8 10 11]; % 1 motor on each rod
 
 % initialization of the actuator genome, 1=actuated, 0=not
 genes = zeros(nbGeneration, nbIndividuals, nbActuationCycle, 12);
@@ -147,11 +152,14 @@ for g = 1:nbGeneration
             % manual initialization for testing
             elseif (strcmpi(initMode,'manual'))
                 % load the best individual and the genome from previous run
-                load(filename,'BestIndividual','savedGenes','fitness','performance');
+                load('output/jump6over12MotI100G1c1T2.mat','BestIndividual','savedGenes','fitness','oldPerf','oldPerfIndexes');
                 % to just show the BestIndividual from a specific run
-                genes(1,1,:,:) = BestIndividual;
+                %genes(1,1,:,:) = BestIndividual;
                 % to continue an evolution from the last run
                 %genes(1,:,:,:) = savedGenes(end,:,:,:);
+                % to start evolution from the best individuals from last
+                bestIndexes = oldPerfIndexes(end-nbIndividuals+1:end);
+                genes(1,:,:,:) = savedGenes(end,bestIndexes,:,:);
                 
                 %     motors:     1  2  3  4  5  6  7  8  9 10 11 12
 %                 genes(1,1,1,:) = [0  0  1  0  0  0  0  0  0  0  0  0];
@@ -183,7 +191,7 @@ for g = 1:nbGeneration
         
         % recreate structure and run simulation only on new individuals
         if ( g==1 || ...
-             g>1 && (strcmpi(selectionMode,'ranking')) && ismember(i,indexes(1:end-k)) || ...
+             g>1 && (strcmpi(selectionMode,'ranking')) && ismember(i,perfIndexes(1:end-k)) || ...
              g>1 && (strcmpi(selectionMode,'tournament')) && elitism==false || ...
              g>1 && (strcmpi(selectionMode,'tournament')) && elitism && i>e ) 
         
@@ -294,7 +302,7 @@ for g = 1:nbGeneration
     % copy the perf of the unchanged indiv from last generation
     if (g > 1)
         if (strcmpi(selectionMode,'ranking'))
-            performance(indexes(k+1:end),g) = performance(indexes(k+1:end),g-1);
+            performance(perfIndexes(k+1:end),g) = performance(perfIndexes(k+1:end),g-1);
         elseif ((strcmpi(selectionMode,'tournament')) && elitism)           % TODO correct BUG if e>2
             performance(1:e,g) = sortedPerformance(end);
         end
@@ -303,11 +311,11 @@ for g = 1:nbGeneration
     %% Selection
       
     % sort the perfomances depending if we want to maximize or minimize Fit
-    [sortedPerformance, indexes] = sort(performance(:,g), sortingMode);
+    [sortedPerformance, perfIndexes] = sort(performance(:,g), sortingMode);
     
     % compute the average number of actuator per cycle used by BestInd
     if strcmpi(initMode,'random')
-        nbAvgActuatorsBestIndiv(g) = length( find(genes(g,indexes(end),:,:)==1) )/nbActuationCycle;
+        nbAvgActuatorsBestIndiv(g) = length( find(genes(g,perfIndexes(end),:,:)==1) )/nbActuationCycle;
     end
     
     if ( (g < nbGeneration) && (strcmpi(selectionMode,'tournament')) )
@@ -320,27 +328,30 @@ for g = 1:nbGeneration
     % mutate the individuals that need to be mutated depending on the
     % selection method
     if (g < nbGeneration)
-        genes = genesMutation(mutation,genes,g,nbIndividuals,indexes,AvlblActuators,nbActuationCycle,k,p,selectionMode,elitism,e);
+        genes = genesMutation(mutation,genes,g,nbIndividuals,perfIndexes,AvlblActuators,nbActuationCycle,k,p,selectionMode,elitism,e);
     end
     
     
-    % TODO: save partial results after each generation, overwrite 
+    % save partial results after each generation, overwrite 
+    if (saveResults)
+        if (strcmpi(sortingMode,'ascend'))
+            [~,BestIndividualIndex] = max(performance(:,g));
+        else
+            [~,BestIndividualIndex] = min(performance(:,g));
+        end
+        BestIndividual = genes(nbGeneration,BestIndividualIndex,:,:);
+        savedGenes = genes;
+        oldPerf = performance;
+        oldPerfIndexes = perfIndexes;
+        save(filename,'BestIndividual','savedGenes','fitness','oldPerf','oldPerfIndexes')
+        fprintf('Results saved \n');
+    end
 end
 
 %% Save and plot 
 
 fprintf('Evolution complete !\n');
 
-if (saveResults)
-    if (strcmpi(sortingMode,'ascend'))
-        [~,BestIndividualIndex] = max(performance(:,end));
-    else
-        [~,BestIndividualIndex] = min(performance(:,end));
-    end
-    BestIndividual = genes(nbGeneration,BestIndividualIndex,:,:);
-    savedGenes = genes;
-    save(filename,'BestIndividual','savedGenes','fitness','performance')
-    fprintf('Results saved \n');
-    
+if (saveResults) 
     plotEvolution(performance,sortedPerformance,fitness,nbAvlbleActuators,nbUsedActuators,nbGeneration,nbIndividuals,nbActuationCycle,t,p,nbAvgActuatorsBestIndiv);
 end
