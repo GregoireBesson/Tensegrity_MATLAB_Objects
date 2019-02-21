@@ -81,19 +81,20 @@ displayData = 'NoPlot';
 displaySimulation = false;      % boolean to display every simulation
 saveResults = true;             % boolean to save results in a mat file
 initMode = 'random';            % actuators selection, 'manual' or 'random'
-filename = 'output/distToGoal4over6MotI1000g1c3t2.mat';
+oldFilename = 'output/dist3over3MotI1000g1.mat';
+newFilename = 'output/dist3over3MotI1000g1.mat';
 % draw rndm available actuators for every indiv if true
-changeAvlActuators = true;
+changeAvlActuators = false;
 % number of end cap actuated on the robot 
-nbAvlbleActuators = 6; %1+round(rand*(nbMotorsMax-1));% should be in [1;12] 
+nbAvlbleActuators = 3; %1+round(rand*(nbMotorsMax-1));%should be in [1;12] 
 %number of endcap actuated simultaneously should be in[1:nbAvlbleActuators]
-nbUsedActuators = 4; %1+round(rand*(nbAvailableActuators-1)); 
+nbUsedActuators = 3; %1+round(rand*(nbAvailableActuators-1)); 
 % update the weight of the robot considering the number of actuators
 nodalMass = (nbAvlbleActuators*weightActEndCap +  ...
     (12-nbAvlbleActuators)*weightEmptyEndCap)/12 *ones(12,1);
 nbIndividuals = 1000;           % size of population
 nbGeneration = 1;               % number of generation
-nbActuationCycle = 3;           % size of actuation sequence
+nbActuationCycle = 5;           % size of actuation sequence
 delayAct = 0;                   % in ms
 
 % Fitness function
@@ -108,11 +109,8 @@ elitism = true;                 % copy e elites without mutation if true
 e = 1;                          % number of elites to be copied 
 
 % Mutation parameters
-if (nbUsedActuators == nbAvlbleActuators)
-    mutation = 'soft';
-else
-    mutation = 'soft';    % hard(all genes mutated), soft(1/cycle), 
-end                             % ConstNbAct (change 1act with 1available
+mutation = 'soft';              % hard(all genes mutated), soft(1/cycle), 
+                                % ConstNbAct (change 1act with 1available
 p = 0.2;                        % probability of mutation
 
 %Create the random number stream for reproducibility:
@@ -132,6 +130,7 @@ zmax = zeros(nbIndividuals,1);
 dist2goal = zeros(nbIndividuals,1);
 performance = zeros(nbIndividuals, nbGeneration);
 nbAvgActuatorsBestIndiv = zeros(1,nbGeneration);
+AvlActuatorsPerInd = zeros(nbGeneration,nbIndividuals,nbAvlbleActuators);
 
 for g = 1:nbGeneration
     
@@ -153,17 +152,18 @@ for g = 1:nbGeneration
                 %Draw a random set of location for the actuators, 
                 %same for all the indiv
                 AvlblActuators = datasample(rngParameters,1:12,...
-                    nbAvlbleActuators,'Replace',false);
+                                 nbAvlbleActuators,'Replace',false);
+                AvlActuatorsPerInd(g,i,:) = AvlblActuators;
             end
             % random initialization
             if (strcmpi(initMode,'random'))
                 genes(1,i,:,:) = initRandomGenome(nbActuationCycle,...
                              AvlblActuators,nbUsedActuators,rngParameters);
             % manual initialization for testing
-            elseif (strcmpi(initMode,'manual'))
+            elseif (strcmpi(initMode,'manual') && i==1)
                 % load the best individual and the genome from previous run
-                load(filename,'BestIndividual','savedGenes','fitness',...
-                    'oldPerf','oldPerfIndexes');
+                load(oldFilename,'BestIndividual','savedGenes',...
+                    'fitness','oldPerf','oldPerfIndexes','oldAvlbAct');
                 % to just show the BestIndividual from a specific run
                 %genes(1,1,:,:) = BestIndividual;
                 % to continue an evolution from the last run
@@ -171,6 +171,7 @@ for g = 1:nbGeneration
                 % to start evolution from the best individuals from last
                 bestIndexes = oldPerfIndexes(end-nbIndividuals+1:end);
                 genes(1,:,:,:) = savedGenes(end,bestIndexes,:,:);
+                AvlActuatorsPerInd(g,:,:) = oldAvlbAct(g,bestIndexes,:);
                 
                 %     motors:     1  2  3  4  5  6  7  8  9 10 11 12
 %                 genes(1,1,1,:) = [0  0  1  0  0  0  0  0  0  0  0  0];
@@ -242,9 +243,9 @@ for g = 1:nbGeneration
                 lighting flat
                 colormap([0.8 0.8 1; 0 1 1]);
                 lims = barLength;
-                xlim([-3*lims 3*lims])
-                ylim([-3*lims 3*lims])
-                zlim(1*[-0.01 lims])
+                xlim([-4*lims 4*lims])
+                ylim([-4*lims 4*lims])
+                zlim(1*[-0.01 1.5*lims])
                 % plot the ground
                 hold on
                 [x, y] = meshgrid(-4*barLength:0.1:4*barLength); 
@@ -332,15 +333,14 @@ for g = 1:nbGeneration
     [sortedPerformance, perfIndexes] = sort(performance(:,g), sortingMode);
     
     % compute the average number of actuator per cycle used by BestInd
-    if strcmpi(initMode,'random')
-        nbAvgActuatorsBestIndiv(g) = ...
+    nbAvgActuatorsBestIndiv(g) = ...
           length(find(genes(g,perfIndexes(end),:,:)==1) )/nbActuationCycle;
-    end
     
     if ( (g < nbGeneration) && (strcmpi(selectionMode,'tournament')) )
         % fill the next generation with tournament method
-        genes = tournamentSelection(genes,nbIndividuals,performance,g,t,...
-            elitism,e,sortingMode);
+        [genes,AvlActuatorsPerInd] = tournamentSelection(genes,...
+            nbIndividuals,performance,g,t,elitism,e,sortingMode,...
+            AvlActuatorsPerInd);
     end
 
     %% Mutation
@@ -349,10 +349,9 @@ for g = 1:nbGeneration
     % selection method
     if (g < nbGeneration)
         genes = genesMutation(mutation,genes,g,nbIndividuals,...
-            perfIndexes,AvlblActuators,nbActuationCycle,k,p,...
+            perfIndexes,AvlActuatorsPerInd,nbActuationCycle,k,p,...
             selectionMode,elitism,e);
     end
-    
     
     % save partial results after each generation, overwrite 
     if (saveResults)
@@ -365,9 +364,10 @@ for g = 1:nbGeneration
         savedGenes = genes;
         oldPerf = performance;
         oldPerfIndexes = perfIndexes;
-        save(filename,'BestIndividual','savedGenes','fitness',...
-            'oldPerf','oldPerfIndexes')
-        fprintf('Results saved \n');
+        oldAvlbAct = AvlActuatorsPerInd;
+        save(newFilename,'BestIndividual','savedGenes','fitness',...
+            'oldPerf','oldPerfIndexes','oldAvlbAct')
+        fprintf('                               Results saved \n\n');
     end
 end
 

@@ -1,4 +1,4 @@
-function genesOut = tournamentSelection(genesIn,nbIndiv,performance,g,t,elitism,e,sortingMode)
+function [genesOut,AvlActuatorsOut] = tournamentSelection(genesIn,nbIndiv,performance,g,t,elitism,e,sortingMode,AvlActuatorsIn)
     
 %Create the random number stream for reproducibility:
 rngParameters = RandStream('mlfg6331_64','Seed','Shuffle');
@@ -14,8 +14,9 @@ if (elitism)
         [~,BestIndiv] = min(performance(:,g));
     end
             
-    % copy it as first indivi of next generation
+    % copy it as first indivi of next generation (genes and AvlActuators)
     genesIn(g+1,1,:,:) = genesIn(g,BestIndiv,:,:);
+    AvlActuatorsIn(g+1,1,:) = AvlActuatorsIn(g,BestIndiv,:);
     
     start = e+1;
 end
@@ -35,10 +36,13 @@ for i=start:nbIndiv
     
     % copy it in next generation
     genesIn(g+1,i,:,:) = genesIn(g,contestantsIndexes(championIndex),:,:);
+    AvlActuatorsIn(g+1,i,:) = AvlActuatorsIn(g,contestantsIndexes(championIndex),:);
+    
    
 end
 
 % output the mutated genome
 genesOut = genesIn;
+AvlActuatorsOut = AvlActuatorsIn;
 
 end

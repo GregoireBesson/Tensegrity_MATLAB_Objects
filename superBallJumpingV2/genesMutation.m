@@ -10,7 +10,7 @@
 %           - g, generation counter
 %           - nbIndiv, population size
 %           - indexes, ascending sorted individuales regarding their perf
-%           - AvlblActuators, list of available actuators
+%           - AvlblActuators(g,nbInd,nbAvlAct), list of available actuators
 %           - nbActuationCycle
 %           - k, selection parameter: worst k indiv mutate
 %           - p, probability of mutation 0 < p < 1
@@ -61,7 +61,7 @@ if (strcmpi(selectionMode,'ranking'))
 elseif (strcmpi(selectionMode,'tournament'))
     
     start = 1;
-    nbAvlAct = length(AvlblActuators);
+    [~,~,nbAvlAct] = size(AvlblActuators);
     
     % don't mutate the elites if elitism enabled
     if (elitism)
@@ -87,9 +87,9 @@ elseif (strcmpi(selectionMode,'tournament'))
                 x = rand();
                 % probability of mutation of this cycle 
                 if (x <= p)
-                    % toggle a random gene in this cycle (between 1 to 12)
+                    % toggle a random gene (btwn 1 to nbAvAct)
                     randomGeneIndex = 1 + round(rand()*(nbAvlAct-1));
-                    randomGene = AvlblActuators(randomGeneIndex);
+                    randomGene = AvlblActuators(g+1,i,randomGeneIndex);
                     genesIn(g+1,i,c,randomGene) = ~genesIn(g+1,i,c,randomGene);
                 end
             end
@@ -110,8 +110,8 @@ elseif (strcmpi(selectionMode,'tournament'))
                     genesIn(g+1,i,c,prevAct(indexToTurnOff)) = 0;
                     
                     % turn on an available motor
-                    indexesNotUsedAct = ~ismember(AvlblActuators,prevAct);
-                    notUsedAct = AvlblActuators(indexesNotUsedAct);
+                    indexesNotUsedAct = ~ismember(AvlblActuators(g+1,i,:),prevAct);
+                    notUsedAct = AvlblActuators(g+1,i,indexesNotUsedAct);
                     nbNotUsedAct = length(notUsedAct);
                     indexToTurnOn = 1+round(rand*(nbNotUsedAct-1));
                     genesIn(g+1,i,c,notUsedAct(indexToTurnOn)) = 1;                   
