@@ -37,7 +37,7 @@ if (i==1)
     membersLengthDataStore = zeros(30,nbLoop);
     stringTensionsDataStore = zeros(24,nbLoop);
     CoM = zeros(nbLoop,3);
-    stringToPlot = [9 10 11 15 23 24];
+    stringToPlot = [5 6];
     Zmax = 0;
     DistMax = 0;
     goal = goalXY;
@@ -93,8 +93,8 @@ elseif strcmpi(plotCmd,'PostSim') && (i==nbLoop)
     set(f2, 'Position', [20 20 1000 600]);
     figure(f2);
     subplot(3,2,1);
-    %plot(timeVector,stringRestLengthDataStore(stringToPlot,:))
-    plot(timeVector,stringRestLengthDataStore)
+    plot(timeVector,stringRestLengthDataStore(stringToPlot,:))
+    %plot(timeVector,stringRestLengthDataStore)
     title('Strings Rest Lengths')
     xlabel('Time [s]')
     ylabel('[m]')

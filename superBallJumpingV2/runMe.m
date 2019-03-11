@@ -15,15 +15,15 @@ addpath('../tensegrityObjects')
 %% Define tensegrity structure
 
 % Physical parameters
-barLength = 0.85;               % SUPERball length, (m)
+barLength = 0.55;               % SUPERball length, (m)
 barSpacing = barLength/2;       % space between bars, usually l/2 (m)
-bar_radius = 0.01;              % (m)
+bar_radius = 0.010;             % (m)
 string_radius = 0.005;          % (m) minimum 5mm
-weightEmptyEndCap = 0.100;       % (kg)
-weightActEndCap =0.200;          % (kg)
-pretension = 10;                % tension on strings at rest, (%)
-maxTension = 60;                % max tension on actuated strings, (%)
-K = 400;                        % String stiffness, (N/m)
+weightEmptyEndCap = 0.100;      % (kg)
+weightActEndCap =0.200;         % (kg)
+pretension = 8;                % tension on strings at rest, (%)
+maxTension = 30;                % max tension on actuated strings, (%)
+K = 364;                        % String stiffness, (N/m)
 c = 80;                         % viscous friction coef, (Ns/m)
 stringStiffness = K*ones(24,1); % String stiffness (N/m)
 barStiffness = 100000*ones(6,1);% Bar stiffness (N/m)
@@ -77,28 +77,28 @@ nodes(:,3) = nodes(:,3) + CoMz;             % shift all the nodes in z
 %% Evolution parameters
 
 %plot sim Data 'NoPlot', 'PostSim' or 'RealTime' (make sim much slower!)
-displayData = 'NoPlot'; 
-displaySimulation = false;      % boolean to display every simulation
-saveResults = true;             % boolean to save results in a mat file
-initMode = 'random';            % actuators selection, 'manual' or 'random'
-oldFilename = 'output/dist3over3MotI1000g1.mat';
-newFilename = 'output/dist3over3MotI1000g1.mat';
+displayData = 'PostSim'; 
+displaySimulation = true;      % boolean to display every simulation
+saveResults = false;             % boolean to save results in a mat file
+initMode = 'manual';            % actuators selection, 'manual' or 'random'
+oldFilename = 'output/SMALLERdist6over6MotI25G25thenJumpI25G25.mat';
+newFilename = 'output/SMALLERdist6over6MotI25G25thenJumpI25G25.mat';
 % draw rndm available actuators for every indiv if true
 changeAvlActuators = false;
 % number of end cap actuated on the robot 
-nbAvlbleActuators = 3; %1+round(rand*(nbMotorsMax-1));%should be in [1;12] 
+nbAvlbleActuators = 6; %1+round(rand*(nbMotorsMax-1));%should be in [1;12] 
 %number of endcap actuated simultaneously should be in[1:nbAvlbleActuators]
-nbUsedActuators = 3; %1+round(rand*(nbAvailableActuators-1)); 
+nbUsedActuators = 6; %1+round(rand*(nbAvailableActuators-1)); 
 % update the weight of the robot considering the number of actuators
 nodalMass = (nbAvlbleActuators*weightActEndCap +  ...
     (12-nbAvlbleActuators)*weightEmptyEndCap)/12 *ones(12,1);
-nbIndividuals = 1000;           % size of population
+nbIndividuals = 1;           % size of population
 nbGeneration = 1;               % number of generation
-nbActuationCycle = 5;           % size of actuation sequence
+nbActuationCycle = 1;           % size of actuation sequence
 delayAct = 0;                   % in ms
 
 % Fitness function
-fitness = 'DistToGoal';         % Jump, Dist, Jump*Dist or DistToGoal
+fitness = 'Jump';               % Jump, Dist, Jump*Dist or DistToGoal
 goal = [0 -2];                  % X Y coordinates of the wanted goal
 
 % Selection parameters
@@ -120,7 +120,7 @@ rngParameters = RandStream('mlfg6331_64','Seed','Shuffle');
 AvlblActuators = datasample(rngParameters,1:12,nbAvlbleActuators,...
     'Replace',false);
 % OR user choose the end cap that are actuated (comment if you want rndm)
-%AvlblActuators = [1 4 5 8 10 11]; % 1 motor on each rod
+AvlblActuators = [1 2 5 6 8 10]; % 1 motor on each rod
 
 % initialization of the actuator genome, 1=actuated, 0=not
 genes = zeros(nbGeneration, nbIndividuals, nbActuationCycle, 12);
@@ -159,19 +159,23 @@ for g = 1:nbGeneration
             if (strcmpi(initMode,'random'))
                 genes(1,i,:,:) = initRandomGenome(nbActuationCycle,...
                              AvlblActuators,nbUsedActuators,rngParameters);
+                AvlActuatorsPerInd(g,i,:) = AvlblActuators;
             % manual initialization for testing
-            elseif (strcmpi(initMode,'manual') && i==1)
-                % load the best individual and the genome from previous run
-                load(oldFilename,'BestIndividual','savedGenes',...
-                    'fitness','oldPerf','oldPerfIndexes','oldAvlbAct');
-                % to just show the BestIndividual from a specific run
-                %genes(1,1,:,:) = BestIndividual;
-                % to continue an evolution from the last run
-                %genes(1,:,:,:) = savedGenes(end,:,:,:);
-                % to start evolution from the best individuals from last
-                bestIndexes = oldPerfIndexes(end-nbIndividuals+1:end);
-                genes(1,:,:,:) = savedGenes(end,bestIndexes,:,:);
-                AvlActuatorsPerInd(g,:,:) = oldAvlbAct(g,bestIndexes,:);
+            elseif (strcmpi(initMode,'manual'))
+                if (i==1)
+                    % load the best individual and the genome from previous run
+                    load(oldFilename,'BestIndividual','savedGenes',...
+                        'fitness','oldPerf','oldPerfIndexes','oldAvlbAct');
+                    % to continue an evolution from the last run
+                    %genes(1,:,:,:) = savedGenes(end,:,:,:);
+                    % to start evolution from the best individuals from last
+                    bestIndexes = oldPerfIndexes(end-nbIndividuals+1:end);
+                    genes(1,:,:,:) = savedGenes(end,bestIndexes,:,:);
+                    AvlActuatorsPerInd(1,:,:) = oldAvlbAct(end,bestIndexes,:);
+                    %     motors:     1  2  3  4  5  6  7  8  9 10 11 12
+                    %genes(1,1,1,:) = [0  1  1  0  1  0  0  1  1  0  0  1];      % intuitive jump
+                    genes(1,1,1,:) = [0  1  0  0  0  0  0  0  0  0  0  0];
+                end
                 
                 %     motors:     1  2  3  4  5  6  7  8  9 10 11 12
 %                 genes(1,1,1,:) = [0  0  1  0  0  0  0  0  0  0  0  0];
@@ -243,8 +247,8 @@ for g = 1:nbGeneration
                 lighting flat
                 colormap([0.8 0.8 1; 0 1 1]);
                 lims = barLength;
-                xlim([-4*lims 4*lims])
-                ylim([-4*lims 4*lims])
+                xlim([-2*lims 2*lims])
+                ylim([-2*lims 2*lims])
                 zlim(1*[-0.01 1.5*lims])
                 % plot the ground
                 hold on
@@ -275,7 +279,9 @@ for g = 1:nbGeneration
                 actuators,i, nbActuationCycle, displaySimulation,genes,...
                 g,firstStringsToActuate);
             
-            nbLoop = round(280*nbActuationCycle);
+            nbLoop = round(150*nbActuationCycle);
+            %nbLoop = round(280*nbActuationCycle);
+
             
             % Simulation loop
             for l = 1:nbLoop
@@ -367,7 +373,7 @@ for g = 1:nbGeneration
         oldAvlbAct = AvlActuatorsPerInd;
         save(newFilename,'BestIndividual','savedGenes','fitness',...
             'oldPerf','oldPerfIndexes','oldAvlbAct')
-        fprintf('                               Results saved \n\n');
+        fprintf('                                     Results saved \n\n');
     end
 end
 

@@ -26,7 +26,7 @@ function plotEvolution(performance,sortedPerformance,Fitness,nbAvlActuators,nbUs
     
     figure();
         
-    yyaxis left
+    %yyaxis left
     plot(generationsVector, bestPerformance,'--','LineWidth',1.5)
     hold on
     plot(generationsVector, avgPerformance,'r','LineWidth',1.5)
@@ -34,9 +34,9 @@ function plotEvolution(performance,sortedPerformance,Fitness,nbAvlActuators,nbUs
     title([num2str(nbIndividuals), ' Indiv, ' ,num2str(nbUsedActuators),' out of ',num2str(nbAvlActuators), ' motors, ' ,num2str(nbActuations), ' actuation cycle(s), ', 'Tournmt size = ',num2str(t),', p_{mut} = ',num2str(p)]);
     xlabel('Generation');
     ylabel(['Performance: ', Fitness, ' (m)']);
-    yyaxis right
-    plot(generationsVector,nbAvgActuatorsBestIndiv,'--','LineWidth',1)
-    ylabel('Average number of motors per cycle (Best Indiv.)')
+    %yyaxis right
+    %plot(generationsVector,nbAvgActuatorsBestIndiv,'--','LineWidth',1)
+    %ylabel('Average number of motors per cycle (Best Indiv.)')
     grid on
     legend('Best performance','Avg performance','Nmb of motors')
     set(gca,'fontsize', 14);
