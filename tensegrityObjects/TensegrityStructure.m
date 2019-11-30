@@ -302,7 +302,7 @@ classdef TensegrityStructure < handle
                 Q((isString & (restLengths>obj.memberLength | Q>0))) = 0;
                 
                 obj.memberTensions = -Q .* obj.memberLength; %Tensions in N
-                T_limit = 100;
+                T_limit = 200;
                 % Saturate cable tensions
                 obj.memberTensions(isString & ...
                     (obj.memberTensions > T_limit)) = T_limit; 
@@ -348,7 +348,7 @@ classdef TensegrityStructure < handle
                 nodeXYZdoubleDot = (FF+groundForces).*M;
                 
                 % Apply gravity
-                nodeXYZdoubleDot(:,3) = nodeXYZdoubleDot(:,3)  -9.81;
+                nodeXYZdoubleDot(:,3) = nodeXYZdoubleDot(:,3)  - 9.81;
                 nodeXYZdoubleDot(fN,:) = 0;
             end
         end

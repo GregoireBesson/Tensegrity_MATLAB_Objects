@@ -31,7 +31,7 @@ function plotEvolution(performance,sortedPerformance,Fitness,nbAvlActuators,nbUs
     hold on
     plot(generationsVector, avgPerformance,'r','LineWidth',1.5)
     boxplot(performance);
-    title([num2str(nbIndividuals), ' Indiv, ' ,num2str(nbUsedActuators),' out of ',num2str(nbAvlActuators), ' motors, ' ,num2str(nbActuations), ' actuation cycle(s), ', 'Tournmt size = ',num2str(t),', p_{mut} = ',num2str(p)]);
+    title([num2str(nbIndividuals), ' Indiv, ' ,num2str(nbUsedActuators),' out of ',num2str(nbAvlActuators), ' motors, ' ,num2str(nbActuations), ' actuation cycle(s), ', 'Ranking = ',num2str(t),', p_{mut} = ',num2str(p)]);
     xlabel('Generation');
     ylabel(['Performance: ', Fitness, ' (m)']);
     %yyaxis right

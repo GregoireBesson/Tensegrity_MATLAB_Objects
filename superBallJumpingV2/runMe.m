@@ -1,4 +1,4 @@
-% Author:     ???
+% Author:     Jeff Friesen
 % ModifiedBy: Gregoire Besson, EPFL student, gregoire.besson@alumni.epfl.ch
 % Date:       Winter 2018-2019
 %
@@ -15,17 +15,21 @@ addpath('../tensegrityObjects')
 %% Define tensegrity structure
 
 % Physical parameters
-barLength = 0.55;               % SUPERball length, (m)
+barLength = 0.50;               % SUPERball length, (m)
+passiveCableRestLength = 0.31;  % (m)
+activeCableRestLength = 0.34;   % (m)
 barSpacing = barLength/2;       % space between bars, usually l/2 (m)
-bar_radius = 0.010;             % (m)
+bar_radius = 0.020;             % (m)
 string_radius = 0.005;          % (m) minimum 5mm
-weightEmptyEndCap = 0.100;      % (kg)
-weightActEndCap =0.200;         % (kg)
-pretension = 8;                % tension on strings at rest, (%)
-maxTension = 30;                % max tension on actuated strings, (%)
-K = 364;                        % String stiffness, (N/m)
+weightEmptyEndCap = 0.25;      % (kg)
+weightActEndCap = 0.25;        % (kg)
+pretension = 5;                 % tension on strings at rest, (%)
+maxTension = 55;                % max tension on actuated strings, (%)
+%K = 700;                       % String stiffness, (N/m)
+Kactive = 1000;  %800 for loc    % Stiffness of active cables, (N/m)
+Kpassive = 1000; %800 for loc    % Stiffness of passive cables, (N/m)
 c = 80;                         % viscous friction coef, (Ns/m)
-stringStiffness = K*ones(24,1); % String stiffness (N/m)
+stringStiffness = Kpassive*ones(24,1); % String stiffness (N/m)
 barStiffness = 100000*ones(6,1);% Bar stiffness (N/m)
 stringDamping = c*ones(24,1);   % string damping vector
 F = zeros(12, 3);               % n by 3 matrix nodal forces
@@ -57,6 +61,9 @@ strings = [1 1  1  1 2 2  2  2 3 3 3  3 4 4  4  4  5  5  6  6  7  7  8  8;
 actuators = [1  5  9 13 17 19 21 23 11  3 12  4;
              2  6 10 14 18 20 22 24 15  7 16  8];
 
+% new actuators pull on 1 string, table contain the string         
+newActuators = [6 17 4 24 15 9];
+
 % one motor on each end cap so 12 possible motors on a 6-bars structure       
 [~,nbMotorsMax] = size(actuators);
 
@@ -81,8 +88,8 @@ displayData = 'PostSim';
 displaySimulation = true;      % boolean to display every simulation
 saveResults = false;             % boolean to save results in a mat file
 initMode = 'manual';            % actuators selection, 'manual' or 'random'
-oldFilename = 'output/SMALLERdist6over6MotI25G25thenJumpI25G25.mat';
-newFilename = 'output/SMALLERdist6over6MotI25G25thenJumpI25G25.mat';
+oldFilename = 'output/SMALLERdist9over12MotI25G25k5.mat';
+newFilename = 'output/SMALLERdist9over12MotI25G25k5.mat';
 % draw rndm available actuators for every indiv if true
 changeAvlActuators = false;
 % number of end cap actuated on the robot 
@@ -98,7 +105,7 @@ nbActuationCycle = 1;           % size of actuation sequence
 delayAct = 0;                   % in ms
 
 % Fitness function
-fitness = 'Jump';               % Jump, Dist, Jump*Dist or DistToGoal
+fitness = 'jump';               % Jump, Dist, Jump*Dist or DistToGoal
 goal = [0 -2];                  % X Y coordinates of the wanted goal
 
 % Selection parameters
@@ -120,10 +127,10 @@ rngParameters = RandStream('mlfg6331_64','Seed','Shuffle');
 AvlblActuators = datasample(rngParameters,1:12,nbAvlbleActuators,...
     'Replace',false);
 % OR user choose the end cap that are actuated (comment if you want rndm)
-AvlblActuators = [1 2 5 6 8 10]; % 1 motor on each rod
+%AvlblActuators = [1 4 5 8 9 12]; % 1 motor on each rod
 
 % initialization of the actuator genome, 1=actuated, 0=not
-genes = zeros(nbGeneration, nbIndividuals, nbActuationCycle, 12);
+genes = zeros(nbGeneration, nbIndividuals, nbActuationCycle, 6);
 traveledDist = zeros(nbIndividuals,1);
 distMax = zeros(nbIndividuals,1);
 zmax = zeros(nbIndividuals,1);
@@ -164,17 +171,23 @@ for g = 1:nbGeneration
             elseif (strcmpi(initMode,'manual'))
                 if (i==1)
                     % load the best individual and the genome from previous run
-                    load(oldFilename,'BestIndividual','savedGenes',...
-                        'fitness','oldPerf','oldPerfIndexes','oldAvlbAct');
+                    %load(oldFilename,'BestIndividual','savedGenes',...
+                    %    'fitness','oldPerf','oldPerfIndexes','oldAvlbAct');
                     % to continue an evolution from the last run
                     %genes(1,:,:,:) = savedGenes(end,:,:,:);
                     % to start evolution from the best individuals from last
-                    bestIndexes = oldPerfIndexes(end-nbIndividuals+1:end);
-                    genes(1,:,:,:) = savedGenes(end,bestIndexes,:,:);
-                    AvlActuatorsPerInd(1,:,:) = oldAvlbAct(end,bestIndexes,:);
-                    %     motors:     1  2  3  4  5  6  7  8  9 10 11 12
-                    %genes(1,1,1,:) = [0  1  1  0  1  0  0  1  1  0  0  1];      % intuitive jump
-                    genes(1,1,1,:) = [0  1  0  0  0  0  0  0  0  0  0  0];
+                    %bestIndexes = oldPerfIndexes(end-nbIndividuals+1:end);
+                    %genes(1,:,:,:) = savedGenes(end,bestIndexes,:,:);
+                    %AvlActuatorsPerInd(1,:,:) = oldAvlbAct(end,bestIndexes,:);
+                    %     motors:     1  2  3  4  5  6  
+                    genes(1,1,1,:) = [1  1  1  1  1  1];% compressed vertexes
+                   
+                    
+                    %genes(1,1,1,:) = [0  0  0  0  0  0  0  0  0  0  0  0];
+                    %genes(1,1,1,:) = [0  0  1  0  0  0  0  1  1  0  0  0];      % intuitive directional jump
+                    %genes(1,1,2,:) = [0  1  0  0  1  0  0  0  0  0  1  0];
+                    %genes(1,1,2,:) = [1  0  0  1  1  0  0  1  1  0  0  1];
+                    %genes(1,1,3,:) = [1  0  0  1  1  0  0  1  1  0  0  1];
                 end
                 
                 %     motors:     1  2  3  4  5  6  7  8  9 10 11 12
@@ -202,8 +215,18 @@ for g = 1:nbGeneration
             end
         end
         
+        %activeStrings = reshape(newActuators(:,genes(g,i,1,:)==1),...
+        %                [1,length(newActuators(:,genes(g,i,1,:)==1))]);
+        %TEST TO ACTUATE 1 string per actuator (vertical string)
+        %activeStrings = [6 17 4 15 9 24];
+        stringStiffness(newActuators) = Kactive;
+       
+        
         % compute the first set of strings of the Cycle of actuation
-        firstStringsToActuate = genes2strings(genes,g,i,1,actuators);
+        firstStringsToActuate = genes2strings(genes,g,i,1,newActuators);
+        %firstStringsToActuate = [6 17 4 15 9 24];   
+        % Needed if active cables have differente length than passive ones:
+        stringRestLength(newActuators) = activeCableRestLength;
         
         %% Creation of the structure
         
@@ -246,10 +269,10 @@ for g = 1:nbGeneration
                 light('Position',[0 0 10],'Style','local')
                 lighting flat
                 colormap([0.8 0.8 1; 0 1 1]);
-                lims = barLength;
+                lims = barLength*2;
                 xlim([-2*lims 2*lims])
                 ylim([-2*lims 2*lims])
-                zlim(1*[-0.01 1.5*lims])
+                zlim(1*[-0.01 1*lims])
                 % plot the ground
                 hold on
                 [x, y] = meshgrid(-4*barLength:0.1:4*barLength); 
@@ -266,7 +289,7 @@ for g = 1:nbGeneration
                 %axis equal;
                 
                 drawnow; % Draw and hold initial conditions
-                %pause(0);
+                pause(0);
                 
             end
             
@@ -275,14 +298,13 @@ for g = 1:nbGeneration
             displayTimespan = 1/20;     % 20fps
             % set the dynamics parameters
             myDynamicsUpdate(superBall, superBallDynamicsPlot,...
-                displayTimespan, pretension, maxTension, l0,...
-                actuators,i, nbActuationCycle, displaySimulation,genes,...
+                displayTimespan, pretension, maxTension, activeCableRestLength,...
+                newActuators,i, nbActuationCycle, displaySimulation,genes,...
                 g,firstStringsToActuate);
             
-            nbLoop = round(150*nbActuationCycle);
-            %nbLoop = round(280*nbActuationCycle);
-
-            
+            % will define the simulation duration
+            nbLoop = round(280*nbActuationCycle);
+        
             % Simulation loop
             for l = 1:nbLoop
                 myDynamicsUpdate();
@@ -309,6 +331,7 @@ for g = 1:nbGeneration
     %Select which performance to be evaluated
     if (strcmpi(fitness,'Jump'))
         performance(:,g) = zmax;
+        jump = zmax - barLength/2.5 %(zmax of CoM - initial CoM z)
     elseif (strcmpi(fitness,'Dist'))
         performance(:,g) = traveledDist;
     elseif (strcmpi(fitness,'DistMax'))
@@ -384,5 +407,5 @@ fprintf('Evolution complete !\n');
 if (saveResults) 
     plotEvolution(performance,sortedPerformance,fitness,...
         nbAvlbleActuators,nbUsedActuators,nbGeneration,nbIndividuals,...
-        nbActuationCycle,t,p,nbAvgActuatorsBestIndiv);
+        nbActuationCycle,k,p,nbAvgActuatorsBestIndiv);
 end

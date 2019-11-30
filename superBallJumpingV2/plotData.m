@@ -93,8 +93,8 @@ elseif strcmpi(plotCmd,'PostSim') && (i==nbLoop)
     set(f2, 'Position', [20 20 1000 600]);
     figure(f2);
     subplot(3,2,1);
-    plot(timeVector,stringRestLengthDataStore(stringToPlot,:))
-    %plot(timeVector,stringRestLengthDataStore)
+    %plot(timeVector,stringRestLengthDataStore(stringToPlot,:))
+    plot(timeVector,stringRestLengthDataStore)
     title('Strings Rest Lengths')
     xlabel('Time [s]')
     ylabel('[m]')
@@ -126,9 +126,9 @@ elseif strcmpi(plotCmd,'PostSim') && (i==nbLoop)
     plot3(CoM(1,X),CoM(1,Y),CoM(1,Z),'go','DisplayName','Start')
     plot3(CoM(end,X),CoM(end,Y),CoM(end,Z),'ro','DisplayName','End')
     lims = 1;
-    xlim([-2.1 2.1])
-    ylim([-2.1 2.1])
-    zlim(1*[-0.01 lims])
+    xlim([-1 1])
+    ylim([-1 1])
+    zlim(1*[-0.01 0.6])
     subplot(3,2,4);
     plot(CoM(:,X),CoM(:,Y),'DisplayName','CoM Trace')
     title('XY CoM Trajectory')
@@ -139,14 +139,18 @@ elseif strcmpi(plotCmd,'PostSim') && (i==nbLoop)
     hold on
     plot(CoM(1,X),CoM(1,Y),'go','DisplayName','Start')
     plot(CoM(end,X),CoM(end,Y),'ro','DisplayName','End')
-    xlim([-2.1 2.1])
-    ylim([-2.1 2.1])
+    xlim([-1.5 1.5])
+    ylim([-1.5 1.5])
+    axis square
     subplot(3,2,6);
     plot(timeVector,CoM(:,Z))
     title('CoM height')
     xlabel('Time [s]')
     zlabel('Z [m]')
     grid on
+    
+    %write data in csv file
+    csvwrite('rawDataJumpMoon.csv',CoM)
     
     %No plot, just store Dist and Zmax
 elseif strcmpi(plotCmd,'NoPlot') && (i==nbLoop)

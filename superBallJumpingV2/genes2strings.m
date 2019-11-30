@@ -10,6 +10,6 @@ function stringsToActuate = genes2strings(genes,genNumber,individual,actCycleCou
     % deduce the corresponding strings to actuate
     stringIndexes = actuators(:,motorIndexes);
     % reshape to the output format
-    stringsToActuate = reshape(stringIndexes,1,2*length(find(motorIndexes==1)));
+    stringsToActuate = reshape(stringIndexes,1,length(find(motorIndexes==1)));
 
 end
