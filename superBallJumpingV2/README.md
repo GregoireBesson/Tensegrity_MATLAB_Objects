@@ -119,3 +119,9 @@ See UKF example `./superBallExample/`.
 
 ##### Tutorial Contributors
 Alex Popescu
+
+Following notes by Gregoire Besson :
+
+runME.m is the main file where the Tensegrtity structure is defined, the 
+evolution parameters are sets (even though evolution has not been used in 
+the second part of the project at LIS)
