@@ -120,8 +120,28 @@ See UKF example `./superBallExample/`.
 ##### Tutorial Contributors
 Alex Popescu
 
+
+####################################
 Following notes by Gregoire Besson :
 
-runME.m is the main file where the Tensegrtity structure is defined, the 
+"runME.m" is the main file where the Tensegrtity structure is defined, the 
 evolution parameters are sets (even though evolution has not been used in 
-the second part of the project at LIS)
+the second part of the project at LIS) what's important here is the 
+newActuators array containing the actuated string. Please refer to the 
+figure "networkMapRotated.jpg" to understand the numerotation system of 
+strings and vertexes.
+
+"myDynamicsUpdate.m" takes care of the update of tension in strings. If 
+strings need to be held (not released at the same time as the others)
+the command line at line 86 need to be uncommented and strings to hold 
+array at line 46 needs to be set. 3 particular good sets of strings to hold
+to obtain nice locomotion moves are preset in comment.
+
+"TensegrityStructure.m" contains the physics of the simulation, for instance
+gravity can be modified line 350.
+
+"plotData.m", as its name shows, plots important data automatically after
+simulation if the variable "displayData" in "runMe.m" is set to PostSim.
+
+"dataPostProcessing.m is a script to read and visualize data exported 
+from OptiTrack System
